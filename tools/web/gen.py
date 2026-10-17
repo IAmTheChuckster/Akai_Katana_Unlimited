@@ -156,6 +156,7 @@ html = r'''<!doctype html>
       <li>Because gold is collected straight away, it doesn't grow in value while it circles: every piece is worth 100 points. Gold from a defeated boss still starts at 10,000.</li>
       <li><strong>Leaving spirit form early is free.</strong> Pressing the spirit button again used to cost 1,600 energy; now you keep what you have left.</li>
       <li><strong>Revenge bullets in every mode, 5× as many.</strong> Destroyed enemies fire revenge bullets in ship mode too, whether you kill them with the shot or the laser. You get 5 times the normal count: 10 × your lives, ×4 for big enemies.</li>
+      <li><strong>Bullets slow down near the orb.</strong> Enemy bullets within 24 px of the orb move at half speed and return to full speed as soon as they leave. This works for every character, in ship and spirit form.</li>
       <li><strong>Revenge bullets cancel into 10,000 gold.</strong> When a revenge bullet is cancelled near an enemy you destroy in spirit form, it drops 10,000 gold instead of 100. Other bullets still drop 100.</li>
     </ul>
     <p class="note">Source and details: <a href="https://github.com/GalaxyBrian/Akai_Katana_Gold">github.com/GalaxyBrian/Akai_Katana_Gold</a></p>
