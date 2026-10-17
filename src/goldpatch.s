@@ -24,44 +24,8 @@ hook:
 L_wtbl: .long   0xA03F0300
 L_wcnt: .long   12
 L_ltbl: .long   0xA03F0380
-L_lcnt: .long   6
+L_lcnt: .long   7
 L_orig: .long   0x0C1DE164
-
-! ---- collect wrapper (called instead of AddScore(r4 player, r5 value, r6) at 0x0C22A0DA; r9 = item).
-! For gold (item kind at +0x34 is 0-2): count the HIT first (AddHit(1)), then make the piece worth
-!   medal score (item+0x50) x HIT count (0x0CB363F8)
-! and write that back into item+0x50 before adding it. The collect code reads item+0x50 again for the
-! gold score display (0x0C27B670) and the trailing popup (0x0C22A320), so both show the same amount.
-! Other items: AddScore unchanged.
-        .org 0x100
-wrap:
-        mov.l   @(52,r9),r0      ! item kind
-        mov     #2,r1
-        cmp/hi  r1,r0            ! kind > 2 -> not gold
-        bt      3f
-        sts.l   pr,@-r15
-        mov.l   r4,@-r15
-        mov.l   L_addhit,r0
-        jsr     @r0
-        mov     #1,r4            ! HIT + 1
-        mov.l   L_hitcnt,r1
-        mov.l   @r1,r1           ! hit score (including this piece)
-        mov     r9,r2
-        add     #0x50,r2
-        mov.l   @r2,r5           ! medal score
-        mul.l   r1,r5
-        sts     macl,r5          ! medal x hit
-        mov.l   r5,@r2           ! item value = medal x hit (read again for gold score + popup)
-        mov.l   @r15+,r4
-        lds.l   @r15+,pr
-        mov     #0,r6
-3:      mov.l   L_addscore,r0
-        jmp     @r0              ! AddScore(r4, r5, r6)
-        nop
-        .align 2
-L_addhit:   .long 0x0C27B500
-L_hitcnt:   .long 0x0CB363F8
-L_addscore: .long 0x0C1F8B20
 
 ! ---- orbit-entry state chooser (called instead of random(r4) at 0x0C229896; r13 = item)
 ! returns r0 = random(r4) as before, and r2 = new state:
@@ -239,10 +203,11 @@ L_imain: .long  0x0C228A60
         .long 0xAC22994E, 0x0009   ! spirit form: energy (item+0xB0 == 4) no longer forced to release (was bt 0x0C229970)
 ! ---- long patches
         .org 0x380
-        .long 0xAC22A104, 0xA03F0100   ! item collect: AddScore -> our wrapper
+        .long 0xAC22A104, 0xA03F0480   ! item collect: AddScore -> our wrapper
         .long 0xAC2299D8, 0xA03F0140   ! orbit entry: random() call -> our state chooser
         .long 0xAC238908, 0xA03F0180   ! enemy kill: rank-add call -> wrapper that also arms revenge bullets
         .long 0xAC226F14, 0xA03F0400   ! SpawnItem: per-kind setup call -> wrapper (100 medal near the player -> 1,000)
+        .long 0xAC1F0F0C, 0xA03F04E0   ! scene change (game start / next stage): 0x0C1FD750 -> wrapper that clears HIT first
         .long 0xAC1FF3DC, 0xA03F0200   ! bullet manager: literal for the jsr above (was add #-1,r1 / mov.l r1,@(r0,r8))
         .long 0xAC227F50, 0xA03F0280   ! energy item init: main routine 0x0C228A60 -> our wrapper (energy only)
 
@@ -287,3 +252,59 @@ L_nr2:  .word   NEAR_R*NEAR_R
 L_hb:   .long   0x0C7E86FC
 L_kset: .long   0x0C228960
 
+! ---- collect wrapper (called instead of AddScore(r4 player, r5 value, r6) at 0x0C22A0DA; r9 = item).
+! For gold (item kind at +0x34 is 0-2): count the HIT first (AddHit(1)), then make the piece worth
+!   medal score (item+0x50) x HIT count (0x0CB363F8) / 10
+! and write that back into item+0x50 before adding it. The collect code reads item+0x50 again for the
+! gold score display (0x0C27B670) and the trailing popup (0x0C22A320), so both show the same amount.
+! Other items: AddScore unchanged.
+        .org 0x480
+wrap:
+        mov.l   @(52,r9),r0      ! item kind
+        mov     #2,r1
+        cmp/hi  r1,r0            ! kind > 2 -> not gold
+        bt      3f
+        sts.l   pr,@-r15
+        mov.l   r4,@-r15
+        mov.l   L_addhit,r0
+        jsr     @r0
+        mov     #1,r4            ! HIT + 1
+        mov.l   L_hitcnt,r1
+        mov.l   @r1,r1           ! hit score (including this piece)
+        mov     r9,r2
+        add     #0x50,r2
+        mov.l   @r2,r5           ! medal score
+        mul.l   r1,r5
+        sts     macl,r5          ! medal x hit
+        mov.l   L_div10,r1
+        dmulu.l r1,r5
+        sts     mach,r5
+        shlr2   r5
+        shlr    r5               ! / 10  (x * 0xCCCCCCCD >> 35)
+        mov.l   r5,@r2           ! item value (read again for gold score + popup)
+        mov.l   @r15+,r4
+        lds.l   @r15+,pr
+        mov     #0,r6
+3:      mov.l   L_addscore,r0
+        jmp     @r0              ! AddScore(r4, r5, r6)
+        nop
+        .align 2
+L_addhit:   .long 0x0C27B500
+L_hitcnt:   .long 0x0CB363F8
+L_addscore: .long 0x0C1F8B20
+L_div10:    .long 0xCCCCCCCD
+
+! ---- HIT resets each stage. The scene-change routine at 0x0C1F0E10 (game start r4 = 0x15, next
+! stage r4 = 0x16, and its other scene changes) calls 0x0C1FD750 through the pointer at 0x0C1F0F0C;
+! this wrapper clears the HIT count (0x0CB363F8) and continues to 0x0C1FD750.
+        .org 0x4E0
+stgclr:
+        mov.l   L_hitcnt2,r1
+        mov     #0,r0
+        mov.l   r0,@r1
+        mov.l   L_scene,r1
+        jmp     @r1
+        nop
+        .align 2
+L_hitcnt2:  .long 0x0CB363F8
+L_scene:    .long 0x0C1FD750
