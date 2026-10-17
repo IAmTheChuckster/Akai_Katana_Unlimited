@@ -8,7 +8,7 @@ This repository holds only source, tools and notes. **No ROM data is included**;
 Open the web patcher (`index.html`, served by GitHub Pages) and drop your `akatana.zip`. It:
 
 - checks the CRC32 of `u4`, `u2`, `u23` and `u24`;
-- builds the patched `u4` (CRC32 `f4c1195f`);
+- builds the patched `u4` (CRC32 `f4a27491`);
 - gives you `akatanagold.zip` (the full set with `u4` replaced), `u4.zip` and the raw `u4`;
 - builds `Akai Katana Gold.mra` for MiSTer (ikacore CV1k), filled in with the CRC32s of the files it found, including the new `u4`.
 
@@ -28,7 +28,9 @@ Spirit form = 念身.
 - **Energy balls follow you into spirit form.** Energy balls (item kind 12) circling the orb are no longer sent to be collected when you switch to spirit form. They circle the hitbox instead, the way gold used to (radius about 50 px widening to about 78 px), and go back to the orb when spirit form ends. Their lifetime (item+0xB4; they normally expire about 510 frames after appearing) is paused while you're in spirit form.
 - **Revenge bullets cancel into 10,000 gold.** When a revenge bullet (type `0x4A`) is cancelled near an enemy destroyed in spirit form, it drops 10,000 gold (kind 2) instead of 100. Other bullets still drop 100.
 
-Side effect: gold no longer ages while orbiting, so normal gold is worth 100 points per piece (it used to grow to 1,000 and 10,000). Gold from a defeated boss still starts at 10,000.
+- **Gold is worth medal + HIT × 1,000.** Each gold piece collected scores its medal value (item+0x50: 100 / 1,000 / 10,000) plus the HIT count (including this piece) × 1,000. The value is written back into the item before it is added, so the gold score total (`0C27B670`) and the trailing popup (`0C22A320`) show the same amount. Example: a 100 medal at 359 HIT adds 359,100.
+
+Side effect: gold no longer ages while orbiting, so a normal gold medal is worth 100 (it used to grow to 1,000 and 10,000). Gold from a defeated boss or a cancelled revenge bullet is a 10,000 medal.
 
 ## How it works
 
@@ -43,7 +45,7 @@ The main program is stored compressed in u4 and unpacked into RAM at boot, so th
 | `0C22989C` | `E402` mov #2,r4 | `6423` mov r2,r4 | store the chosen state |
 | `0C2298A0` | `E602` mov #2,r6 | `6623` mov r2,r6 | dispatch the chosen state this frame |
 | `0C226F34` | `4A0B` jsr @r10 (AddHit) | `0009` nop | no HIT on spawn |
-| `0C22A104` | `0C1F8B20` (AddScore) | `A03F0100` | item collect calls a wrapper: AddScore, then AddHit(1) if the item kind (item+0x34) is 0–2 (gold) |
+| `0C22A104` | `0C1F8B20` (AddScore) | `A03F0100` | item collect calls a wrapper: for gold (item kind 0–2) AddHit(1), then item+0x50 = medal + HIT × 1,000, then AddScore; other items AddScore unchanged |
 | `0C27C724` | `1B55` mov.l r5,@(20,r11) | `0009` | HIT not cleared when the timer ends |
 | `0C27B666` | `1205` mov.l r0,@(20,r2) | `0009` | HIT not cleared (second timer path) |
 | `0C217D9C` | `0640` (1600) | `0000` | leaving spirit form early costs 0 energy (SubEnergy amount at `0C217D24`) |
@@ -62,7 +64,7 @@ The target-player check matters. Sending items to release before they have picke
 Requires `binutils-sh-elf` (`sh-elf-as`, `sh-elf-objcopy`) and Python 3.
 
 ```
-make U4=/path/to/original/u4                              # -> build/u4 (CRC32 f4c1195f)
+make U4=/path/to/original/u4                              # -> build/u4 (CRC32 f4a27491)
 python3 tools/web/diff.py /path/to/original/u4 build/u4 > patch.json
 python3 tools/web/gen.py patch.json                       # regenerates index.html and mister/*.mra
 ```

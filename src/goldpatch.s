@@ -27,28 +27,44 @@ L_ltbl: .long   0xA03F0380
 L_lcnt: .long   7
 L_orig: .long   0x0C1DE164
 
-! ---- collect wrapper: AddScore(r4,r5,r6); if item kind (r9+0x34) <= 2 (gold) -> AddHit(1)
+! ---- collect wrapper (called instead of AddScore(r4 player, r5 value, r6) at 0x0C22A0DA; r9 = item).
+! For gold (item kind at +0x34 is 0-2): count the HIT first (AddHit(1)), then make the piece worth
+!   medal score (item+0x50) + HIT count (0x0CB363F8) x 1000
+! and write that back into item+0x50 before adding it. The collect code reads item+0x50 again for the
+! gold score display (0x0C27B670) and the trailing popup (0x0C22A320), so both show the same amount.
+! Other items: AddScore unchanged.
         .org 0x100
 wrap:
-        sts.l   pr,@-r15
-        mov.l   r8,@-r15
-        mov.l   @(52,r9),r8      ! item kind
-        mov.l   L_addscore,r0
-        jsr     @r0
-        nop
+        mov.l   @(52,r9),r0      ! item kind
         mov     #2,r1
-        cmp/hi  r1,r8            ! kind > 2 -> not gold
+        cmp/hi  r1,r0            ! kind > 2 -> not gold
         bt      3f
+        sts.l   pr,@-r15
+        mov.l   r4,@-r15
         mov.l   L_addhit,r0
         jsr     @r0
-        mov     #1,r4
-3:      mov.l   @r15+,r8
+        mov     #1,r4            ! HIT + 1
+        mov.l   L_hitcnt,r1
+        mov.l   @r1,r1           ! hit score (including this piece)
+        mov.w   L_1000,r2
+        mul.l   r2,r1
+        sts     macl,r1          ! hit score x 1000
+        mov     r9,r2
+        add     #0x50,r2
+        mov.l   @r2,r5           ! medal score
+        add     r1,r5
+        mov.l   r5,@r2           ! item value = medal + hit x 1000 (read again for gold score + popup)
+        mov.l   @r15+,r4
         lds.l   @r15+,pr
-        rts
+        mov     #0,r6
+3:      mov.l   L_addscore,r0
+        jmp     @r0              ! AddScore(r4, r5, r6)
         nop
+L_1000: .word   1000
         .align 2
-L_addscore: .long 0x0C1F8B20
 L_addhit:   .long 0x0C27B500
+L_hitcnt:   .long 0x0CB363F8
+L_addscore: .long 0x0C1F8B20
 
 ! ---- orbit-entry state chooser (called instead of random(r4) at 0x0C229896; r13 = item)
 ! returns r0 = random(r4) as before, and r2 = new state:
@@ -272,4 +288,3 @@ L_imain: .long  0x0C228A60
         .long 0xAC20084C, 0xA03F01E0   ! cancelled bullet -> gold (bullet in r12): SpawnItem -> wrapper (revenge -> 10,000 gold)
         .long 0xAC1FF3DC, 0xA03F0200   ! bullet manager: literal for the jsr above (was add #-1,r1 / mov.l r1,@(r0,r8))
         .long 0xAC227F50, 0xA03F0280   ! energy item init: main routine 0x0C228A60 -> our wrapper (energy only)
-
