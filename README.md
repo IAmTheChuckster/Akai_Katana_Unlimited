@@ -1,4 +1,4 @@
-# Akai Katana Gold
+# Akai Katana Unlimited
 
 A gameplay patch for Akai Katana (Cave, CV1000-D, 2010/ 8/13 MASTER VER., u4 CRC32 `613fd380`).
 This repository holds only source, tools and notes. **No ROM data is included**; you patch your own dump.
@@ -9,8 +9,8 @@ Open the web patcher (`index.html`, served by GitHub Pages) and drop your `akata
 
 - checks the CRC32 of `u4`, `u2`, `u23` and `u24`;
 - builds the patched `u4` (CRC32 `4d9518c8`);
-- gives you `akatanagold.zip` (the full set with `u4` replaced), `u4.zip` and the raw `u4`;
-- builds `Akai Katana Gold.mra` for MiSTer (ikacore CV1k), filled in with the CRC32s of the files it found, including the new `u4`.
+- gives you `akatanaultd.zip` (the full set with `u4` replaced), `u4.zip` and the raw `u4`;
+- builds `Akai Katana Unlimited.mra` for MiSTer (ikacore CV1k), filled in with the CRC32s of the files it found, including the new `u4`.
 
 Everything runs locally in the browser; nothing is uploaded. A ready-made `.mra` with the standard CRC32s is in `mister/`.
 

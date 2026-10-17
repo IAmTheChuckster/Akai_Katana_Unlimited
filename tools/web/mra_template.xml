@@ -1,5 +1,5 @@
 <!--
-  ikacore_CV1k MRA - Akai Katana Gold (Akai Katana, Japan, 2010/ 8/13 MASTER VER., Gold patch).
+  ikacore_CV1k MRA - Akai Katana Unlimited (Akai Katana, Japan, 2010/ 8/13 MASTER VER., Unlimited patch).
 
   DELIVERY: the NAND and YMZ images do not stream over the ioctl/SPI
   lane.  Both roms carry an `address=` attribute, so Main_MiSTer
@@ -20,22 +20,22 @@
                      DDR3 0x3D000000  u24 YMZ chip 1, zero-padded to the
                                           8 MiB slot
     <rom index="0">  ioctl stream     u4  program NOR x1 (a real 4 MiB
-                                          flash; Gold-patched u4)
+                                          flash; Unlimited-patched u4)
 -->
 <misterromdescription>
     <about author="ika-musume" source="https://github.com/ika-musume/ikacore_CV1k"/>
-    <name>Akai Katana Gold (Japan, 2010/ 8/13 MASTER VER., Gold patch)</name>
-    <setname>akatanagold</setname>
+    <name>Akai Katana Unlimited (Japan, 2010/ 8/13 MASTER VER., Unlimited patch)</name>
+    <setname>akatanaultd</setname>
     <year>2010</year>
     <manufacturer>Cave</manufacturer>
     <category>Shooter</category>
     <rbf>ikacore_CV1k</rbf>
 
-    <rom index="1" address="0x34400000" zip="akatanagold.zip" md5="none">
+    <rom index="1" address="0x34400000" zip="akatanaultd.zip" md5="none">
         <part name="u2"  crc="89a2e1a5"/>
     </rom>
 
-    <rom index="2" address="0x3C800000" zip="akatanagold.zip" md5="none">
+    <rom index="2" address="0x3C800000" zip="akatanaultd.zip" md5="none">
         <part name="u23" crc="34a67e24"/>
         <part repeat="0x400000">00</part>
         <part name="u24" crc="10760fed"/>
@@ -44,7 +44,7 @@
 
     <nvram index="3" size="135680"/>
 
-    <rom index="0" zip="akatanagold.zip" md5="none">
+    <rom index="0" zip="akatanaultd.zip" md5="none">
         <part name="u4"  crc="@U4CRC@"/>
     </rom>
 
