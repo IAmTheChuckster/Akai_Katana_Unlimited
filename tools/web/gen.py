@@ -148,12 +148,15 @@ html = r'''<!doctype html>
 
   <section>
     <h2>Gold</h2>
-    <p style="margin:0">Changes to gold in spirit form (念身):</p>
+    <p style="margin:0">Changes (spirit form = 念身):</p>
     <ul>
       <li><strong>Gold is collected automatically.</strong> Gold no longer circles the ship until spirit form ends. Each piece flies straight to the ship and is collected.</li>
       <li><strong>Each collected gold piece adds 1 HIT.</strong> HIT used to count gold as it appeared.</li>
       <li><strong>HIT never resets.</strong> It keeps counting for the whole game instead of clearing about 3 seconds after the last hit. The HIT number is still only shown while it's counting up.</li>
       <li>Because gold is collected straight away, it doesn't grow in value while it circles: every piece is worth 100 points. Gold from a defeated boss still starts at 10,000.</li>
+      <li><strong>Leaving spirit form early is free.</strong> Pressing the spirit button again used to cost 1,600 energy; now you keep what you have left.</li>
+      <li><strong>Revenge bullets in every mode, 5× as many.</strong> Destroyed enemies fire revenge bullets in ship mode too, whether you kill them with the shot or the laser. You get 5 times the normal count: 10 × your lives, ×4 for big enemies.</li>
+      <li><strong>Revenge bullets cancel into 10,000 gold.</strong> When a revenge bullet is cancelled near an enemy you destroy in spirit form, it drops 10,000 gold instead of 100. Other bullets still drop 100.</li>
     </ul>
     <p class="note">Source and details: <a href="https://github.com/GalaxyBrian/Akai_Katana_Gold">github.com/GalaxyBrian/Akai_Katana_Gold</a></p>
   </section>
@@ -431,7 +434,7 @@ window.addEventListener("drop", e => {
 </body>
 </html>
 '''
-IN=0x613fd380; OUT=0xd899ec64
+IN=0x613fd380; OUT=int(sys.argv[2],16)  # CRC32 of the patched u4
 html=(html.replace('@INCRCNUM@',hex(IN)).replace('@OUTCRCNUM@',hex(OUT))
       .replace('@INCRC@','%08x'%IN).replace('@OUTCRC@','%08x'%OUT)
       .replace('@PATCH@',json.dumps(patch)).replace('@MRA@',json.dumps(mra)))
