@@ -8,7 +8,7 @@ This repository holds only source, tools and notes. **No ROM data is included**;
 Open the web patcher (`index.html`, served by GitHub Pages) and drop your `akatana.zip`. It:
 
 - checks the CRC32 of `u4`, `u2`, `u23` and `u24`;
-- builds the patched `u4` (CRC32 `200a35a3`);
+- builds the patched `u4` (CRC32 `f02cf1df`);
 - gives you `akatanagold.zip` (the full set with `u4` replaced), `u4.zip` and the raw `u4`;
 - builds `Akai Katana Gold.mra` for MiSTer (ikacore CV1k), filled in with the CRC32s of the files it found, including the new `u4`.
 
@@ -24,6 +24,7 @@ Spirit form = 念身.
 
 - **Leaving spirit form early is free.** Pressing the spirit button again used to cost a flat 1,600 energy; now you keep what you have left.
 - **Revenge bullets in every mode, 5× as many.** Destroyed enemies fire revenge bullets in ship mode too, whether you kill them with the shot or the laser. You get 5× the original spirit-form count: 10 × lives, ×4 for big enemies. Not every kill qualifies, as before.
+- **Bullets slow down near the orb.** Enemy bullets within 24 px of the orb (the familiar ball, whose live position is at `0CA3FBB4`/`0CA3FBB8` for every character) move at half speed, and return to full speed as soon as they leave. This applies in ship and spirit form. It uses the game's own per-bullet slow percentage (bullet+0x138), which the bullet move code applies as velocity × (100 − slow) / 100.
 - **Revenge bullets cancel into 10,000 gold.** When a revenge bullet (type `0x4A`) is cancelled near an enemy destroyed in spirit form, it drops 10,000 gold (kind 2) instead of 100. Other bullets still drop 100.
 
 Side effect: gold no longer ages while orbiting, so normal gold is worth 100 points per piece (it used to grow to 1,000 and 10,000). Gold from a defeated boss still starts at 10,000.
@@ -49,6 +50,7 @@ The main program is stored compressed in u4 and unpacked into RAM at boot, so th
 | `0C2388D2` | `1ECA` mov.l r12,@(40,r14) | `0009` | spirit branch no longer overwrites the count with 2 × lives |
 | `0C1FFFDC` | `0C226DC0` (SpawnItem) | `A03F01C0` | cancelled-bullet gold (bullet in r8): wrapper turns kind 0–2 into kind 2 when the bullet type (bullet+0x0C) is `0x4A` |
 | `0C20084C` | `0C226DC0` (SpawnItem) | `A03F01E0` | same, for the other cancel site (bullet in r12) |
+| `0C1FF3D2`–`0C1FF3DE` | slow-% countdown (`90B1 018E 2118 8D03 6B83 71FF 0816`) | `D102 410B 0009 A002 0009` + literal `A03F0200` | bullet manager calls our orb routine: slow = 50 inside 24 px of the P1 orb, back to 0 when it leaves; any other slow value counts down as before |
 
 The target-player check matters. Sending items to release before they have picked a player trips the game's own `lpBui->m_SerchPlayer != -1` check (bui/buisub.cpp) and stops the game, which an earlier version of this patch did.
 
@@ -57,7 +59,7 @@ The target-player check matters. Sending items to release before they have picke
 Requires `binutils-sh-elf` (`sh-elf-as`, `sh-elf-objcopy`) and Python 3.
 
 ```
-make U4=/path/to/original/u4                              # -> build/u4 (CRC32 200a35a3)
+make U4=/path/to/original/u4                              # -> build/u4 (CRC32 f02cf1df)
 python3 tools/web/diff.py /path/to/original/u4 build/u4 > patch.json
 python3 tools/web/gen.py patch.json                       # regenerates index.html and mister/*.mra
 ```
