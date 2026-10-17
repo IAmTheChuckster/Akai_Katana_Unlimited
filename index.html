@@ -130,7 +130,7 @@
     <h2><b>3</b>Download</h2>
     <div class="scroll"><table>
       <thead><tr><th>File</th><th>Expected CRC32</th><th>Built CRC32</th><th>Status</th></tr></thead>
-      <tbody><tr><td><code>u4</code> (Gold)</td><td><code>d899ec64</code></td><td id="builtcrc">-</td><td id="builtst" class="wait">Waiting</td></tr></tbody>
+      <tbody><tr><td><code>u4</code> (Gold)</td><td><code>200a35a3</code></td><td id="builtcrc">-</td><td id="builtst" class="wait">Waiting</td></tr></tbody>
     </table></div>
     <div class="btns" style="margin-top:14px">
       <a class="btn disabled" id="dlzip" href="#">Download akatanagold.zip</a>
@@ -139,17 +139,20 @@
       <a class="btn alt" id="dlmra" href="#">Akai Katana Gold.mra (MiSTer)</a>
     </div>
     <p class="note"><code>akatanagold.zip</code> is the full set with <code>u4</code> replaced; <code>u2</code>, <code>u23</code> and <code>u24</code> are copied unchanged. On real hardware, keep a backup of your original u4 flash.</p>
-    <p class="note"><b>MiSTer:</b> the <code>.mra</code> is for the ikacore CV1k core. Put it with your other arcade <code>.mra</code> files and <code>akatanagold.zip</code> in your MAME ROM folder (<code>games/mame</code>). It loads <code>akatanagold.zip</code> and checks for the Gold u4 (<code>d899ec64</code>). After you load a zip, the <code>.mra</code> also uses the CRC32s of the <code>u2</code>, <code>u23</code> and <code>u24</code> it found, so it always matches your set.</p>
+    <p class="note"><b>MiSTer:</b> the <code>.mra</code> is for the ikacore CV1k core. Put it with your other arcade <code>.mra</code> files and <code>akatanagold.zip</code> in your MAME ROM folder (<code>games/mame</code>). It loads <code>akatanagold.zip</code> and checks for the Gold u4 (<code>200a35a3</code>). After you load a zip, the <code>.mra</code> also uses the CRC32s of the <code>u2</code>, <code>u23</code> and <code>u24</code> it found, so it always matches your set.</p>
   </section>
 
   <section>
     <h2>Gold</h2>
-    <p style="margin:0">Changes to gold in spirit form (念身):</p>
+    <p style="margin:0">Changes (spirit form = 念身):</p>
     <ul>
       <li><strong>Gold is collected automatically.</strong> Gold no longer circles the ship until spirit form ends. Each piece flies straight to the ship and is collected.</li>
       <li><strong>Each collected gold piece adds 1 HIT.</strong> HIT used to count gold as it appeared.</li>
       <li><strong>HIT never resets.</strong> It keeps counting for the whole game instead of clearing about 3 seconds after the last hit. The HIT number is still only shown while it's counting up.</li>
       <li>Because gold is collected straight away, it doesn't grow in value while it circles: every piece is worth 100 points. Gold from a defeated boss still starts at 10,000.</li>
+      <li><strong>Leaving spirit form early is free.</strong> Pressing the spirit button again used to cost 1,600 energy; now you keep what you have left.</li>
+      <li><strong>Revenge bullets in every mode, 5× as many.</strong> Destroyed enemies fire revenge bullets in ship mode too, whether you kill them with the shot or the laser. You get 5 times the normal count: 10 × your lives, ×4 for big enemies.</li>
+      <li><strong>Revenge bullets cancel into 10,000 gold.</strong> When a revenge bullet is cancelled near an enemy you destroy in spirit form, it drops 10,000 gold instead of 100. Other bullets still drop 100.</li>
     </ul>
     <p class="note">Source and details: <a href="https://github.com/GalaxyBrian/Akai_Katana_Gold">github.com/GalaxyBrian/Akai_Katana_Gold</a></p>
   </section>
@@ -160,9 +163,9 @@
 <script>
 "use strict";
 const ORIGINAL_CRC = 0x613fd380;
-const OUT_CRC = 0xd899ec64;
+const OUT_CRC = 0x200a35a3;
 const U4_SIZE = 0x400000;
-const PATCH = [[468, "P6AAAA=="], [4128768, "CNEJ0xZiFmQQQ/uPQSIH0QfTFmIWZBBD+49CIgXQK0AJAAkAP6CAAAAABQA/oMAAAAACAB0MZOEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAirJyYAAAjZCKsoJgAACNmIqw0bwAACQAnrCTHAAAJACesZrYAAAkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIqwEoT+gAAEirNiZP6BAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACJPhi+dWAbQC0AJAALhFjgCiQTQC0AB5PZoJk8LAAkAHwwgiycMALUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAiTwrRC0EJAALi3VEC4zYxB4kJk9NhPDESYxFDAYsxEQTiJk8LAAkAEAEJAB4MkEE="]]; // [file offset, base64 bytes] applied to the original u4
+const PATCH = [[468, "P6AAAA=="], [4128768, "CNEJ0xZiFmQQQ/uPQSIH0QfTFmIWZBBD+49CIgXQK0AJAAkAP6CAAAAABwA/oMAAAAAFAB0MZOEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAirJyYAAAjZCKsoJgAACNmIqw0bwAACQAnrCTHAAAJACesZrYAAAkAIaycfQAAAAAjrNKIAAAJAAAAAAAAAAAAIqwEoT+gAAEirNiZP6BAASOsCIk/oIABH6zc/z+gwAEgrEwIP6DgAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACJPhi+dWAbQC0AJAALhFjgCiQTQC0AB5PZoJk8LAAkAHwwgiycMALUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAiTwrRC0EJAALi3VEC4zYxB4kJk9NhPDESYxFDAYsxEQTiJk8LAAkAEAEJAB4MkEEAAAAAAAAAAAAAAAAAAAAAIk8L0AtACQCDYQ+SAOMjMQKLKDH7rwFzM2EIQxwzPDM6HgHhGR4mTwsACQBABgkAHwxAwQAAAAAAAAAAAAAAAAPhEjQDiYNQSogAiwLkAdArQAkAIgzAbQAAAAAAAAAAA+ESNAOJw1BKiACLAuQB0CtACQAiDMBt"]]; // [file offset, base64 bytes] applied to the original u4
 const MRA_TEMPLATE = "<!--\n  ikacore_CV1k MRA - Akai Katana Gold (Akai Katana, Japan, 2010/ 8/13 MASTER VER., Gold patch).\n\n  DELIVERY: the NAND and YMZ images do not stream over the ioctl/SPI\n  lane.  Both roms carry an `address=` attribute, so Main_MiSTer\n  assembles them and memcpys them straight into DDR3; the fabric sees\n  only a download pulse for those two.  Only u4 streams, so the ioctl\n  lane carries 4 MiB instead of the old 152 MiB.  Needs a Main_MiSTer\n  that parses `address` (2021 or later).\n\n  Rom order is deliberate - DDR3 first, index 0 LAST.  Index 0's download\n  is what finally releases the CPU, so every image is in place before the\n  core runs, and any spurious run in an inter-rom gap is wiped by the u4\n  download's own reset hold.\n\n    <rom index=\"1\">  DDR3 0x34400000  u2  NAND dump incl. spare (132 MiB,\n                                          exact size)\n    <rom index=\"2\">  DDR3 0x3C800000  u23 YMZ chip 0, zero-padded to the\n                                          8 MiB slot\n                     DDR3 0x3D000000  u24 YMZ chip 1, zero-padded to the\n                                          8 MiB slot\n    <rom index=\"0\">  ioctl stream     u4  program NOR x1 (a real 4 MiB\n                                          flash; Gold-patched u4)\n-->\n<misterromdescription>\n    <about author=\"ika-musume\" source=\"https://github.com/ika-musume/ikacore_CV1k\"/>\n    <name>Akai Katana Gold (Japan, 2010/ 8/13 MASTER VER., Gold patch)</name>\n    <setname>akatanagold</setname>\n    <year>2010</year>\n    <manufacturer>Cave</manufacturer>\n    <category>Shooter</category>\n    <rbf>ikacore_CV1k</rbf>\n\n    <rom index=\"1\" address=\"0x34400000\" zip=\"akatanagold.zip\" md5=\"none\">\n        <part name=\"u2\"  crc=\"89a2e1a5\"/>\n    </rom>\n\n    <rom index=\"2\" address=\"0x3C800000\" zip=\"akatanagold.zip\" md5=\"none\">\n        <part name=\"u23\" crc=\"34a67e24\"/>\n        <part repeat=\"0x400000\">00</part>\n        <part name=\"u24\" crc=\"10760fed\"/>\n        <part repeat=\"0x400000\">00</part>\n    </rom>\n\n    <nvram index=\"3\" size=\"135680\"/>\n\n    <rom index=\"0\" zip=\"akatanagold.zip\" md5=\"none\">\n        <part name=\"u4\"  crc=\"@U4CRC@\"/>\n    </rom>\n\n    <buttons names=\"B1,B2,B3,B4,Start,Coin,Test,Service,Save State\" default=\"A,B,X,Y,Start,R,L,Select\"/>\n</misterromdescription>\n";
 const DEFAULT_PART_CRC = { u2: "89a2e1a5", u23: "34a67e24", u24: "10760fed" };
 
