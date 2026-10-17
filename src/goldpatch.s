@@ -22,9 +22,9 @@ hook:
         nop
         .align 2
 L_wtbl: .long   0xA03F0300
-L_wcnt: .long   12
+L_wcnt: .long   13
 L_ltbl: .long   0xA03F0380
-L_lcnt: .long   6
+L_lcnt: .long   7
 L_orig: .long   0x0C1DE164
 
 ! ---- collect wrapper: AddScore(r4,r5,r6); if item kind (r9+0x34) <= 2 (gold) -> AddHit(1)
@@ -207,6 +207,43 @@ L_r2:   .word   ORB_R*ORB_R
         .align 2
 L_orb:  .long   0x0CA3FBB4
 
+! ---- energy balls orbit the player in spirit form. Energy items (kind 12) use the same item routine
+! as gold (0x0C228A60). In spirit form the game sends every energy ball to be collected (state 4) at
+! 0x0C229948 (item+0xA4 == 0) and 0x0C229978 (item+0xB0 == 4, the energy marker). We nop the second
+! check, and run energy items through this wrapper, which each frame sets item+0xA4 = 1 while P1 is in
+! spirit form (the flag gold has while it orbits the player) and 0 otherwise (energy's normal value), so
+! orbiting energy circles the hitbox like gold did, and goes back to the orb when spirit form ends.
+! Energy balls normally expire about 510 frames after they appear (lifetime item+0xB4 counts up, state 6
+! past 500, 0x0C229210); the wrapper pauses that clock during spirit form so orbiting energy is never
+! lost by going into spirit form. r4 = item.
+        .org 0x280
+emain:
+        mov.l   L_spf,r1
+        mov.b   @r1,r0           ! P1 spirit flag (0x0C7E8663)
+        mov.w   L_oA4,r1
+        tst     r0,r0
+        add     r4,r1            ! r1 = item+0xA4
+        bt      20f
+        mov     #1,r0
+        mov.l   r0,@r1           ! spirit: orbit the player
+        mov.w   L_oB4,r1
+        add     r4,r1
+        mov.l   @r1,r0           ! lifetime (counts up 1 per frame; fades past 500)
+        cmp/pl  r0
+        bf      21f
+        add     #-1,r0           ! cancel this frame's tick: lifetime paused in spirit form
+        bra     21f
+        mov.l   r0,@r1
+20:     mov.l   r0,@r1           ! ship: item+0xA4 = 0 (orbit the orb as normal)
+21:     mov.l   L_imain,r1
+        jmp     @r1
+        nop
+L_oA4:  .word   0xA4
+L_oB4:  .word   0xB4
+        .align 2
+L_spf:  .long   0x0C7E8663
+L_imain: .long  0x0C228A60
+
 ! ---- word patches (address, value)
         .org 0x300
         .long 0xAC22989C, 0x6423   ! orbit entry: mov r2,r4  (state chosen by our routine: 4 = release, 2 = orbit)
@@ -221,6 +258,7 @@ L_orb:  .long   0x0CA3FBB4
         .long 0xAC1FF3D6, 0x0009   !   nop                                                         was tst r1,r1
         .long 0xAC1FF3D8, 0xA002   !   bra 0x0C1FF3E0 (back to the original code)                  was bt/s
         .long 0xAC1FF3DA, 0x0009   !   nop                                                         was mov r8,r11
+        .long 0xAC22994E, 0x0009   ! spirit form: energy (item+0xB0 == 4) no longer forced to release (was bt 0x0C229970)
 ! ---- long patches
         .org 0x380
         .long 0xAC22A104, 0xA03F0100   ! item collect: AddScore -> our wrapper
@@ -229,4 +267,5 @@ L_orb:  .long   0x0CA3FBB4
         .long 0xAC1FFFDC, 0xA03F01C0   ! cancelled bullet -> gold (bullet in r8): SpawnItem -> wrapper (revenge -> 10,000 gold)
         .long 0xAC20084C, 0xA03F01E0   ! cancelled bullet -> gold (bullet in r12): SpawnItem -> wrapper (revenge -> 10,000 gold)
         .long 0xAC1FF3DC, 0xA03F0200   ! bullet manager: literal for the jsr above (was add #-1,r1 / mov.l r1,@(r0,r8))
+        .long 0xAC227F50, 0xA03F0280   ! energy item init: main routine 0x0C228A60 -> our wrapper (energy only)
 
