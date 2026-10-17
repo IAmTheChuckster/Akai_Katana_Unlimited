@@ -23,8 +23,8 @@ hook:
         .align 2
 L_wtbl: .long   0xA03F0300
 L_wcnt: .long   12
-L_ltbl: .long   0xA03F0380
-L_lcnt: .long   7
+L_ltbl: .long   0xA03F0600
+L_lcnt: .long   18
 L_orig: .long   0x0C1DE164
 
 ! ---- orbit-entry state chooser (called instead of random(r4) at 0x0C229896; r13 = item)
@@ -58,37 +58,6 @@ choose:
 L_o110: .word   0x110
         .align 2
 L_rand: .long   0x0C1E4190
-
-! ---- enemy kill: revenge bullets in every mode (called instead of the rank-add routine 0x0C1FC140)
-! The kill routine (0x0C2385F0) only fires revenge bullets when its frame flag [r14+36] is set and
-! uses [r14+40] (2 x lives) as the count; originally only the spirit-form branch sets them.
-! Both branches call the rank-add routine through one pointer (0x0C238908), so we call it as before
-! and then arm the revenge bullets the same way the spirit branch does (count 2 x lives). r8 = player life (0x640 per life)
-! in both branches at this point; r14 is the kill routine's frame.
-        .org 0x180
-revenge:
-        sts.l   pr,@-r15
-        mov.l   L_rankadd,r0
-        jsr     @r0
-        nop
-        mov     r8,r1            ! life
-        mov.w   L_1600,r2
-        mov     #0,r3
-5:      cmp/ge  r2,r1            ! lives = life / 1600
-        bf      6f
-        sub     r2,r1
-        bra     5b
-        add     #1,r3
-6:      add     r3,r3            ! 2 x lives (the spirit branch's own count)
-        mov.l   r3,@(40,r14)
-        mov     #1,r1
-        mov.l   r1,@(36,r14)     ! fire revenge bullets
-        lds.l   @r15+,pr
-        rts
-        nop
-L_1600: .word   1600
-        .align 2
-L_rankadd: .long 0x0C1FC140
 
 ! ---- orb slow-down. Replaces the bullet manager's per-bullet step at 0x0C1FF3D2 that counts down the
 ! bullet's slow percentage (bullet+0x138; the move code at 0x0C2010F0 moves a bullet by
@@ -201,16 +170,6 @@ L_imain: .long  0x0C228A60
         .long 0xAC1FF3D8, 0xA002   !   bra 0x0C1FF3E0 (back to the original code)                  was bt/s
         .long 0xAC1FF3DA, 0x0009   !   nop                                                         was mov r8,r11
         .long 0xAC22994E, 0x0009   ! spirit form: energy (item+0xB0 == 4) no longer forced to release (was bt 0x0C229970)
-! ---- long patches
-        .org 0x380
-        .long 0xAC22A104, 0xA03F0480   ! item collect: AddScore -> our wrapper
-        .long 0xAC2299D8, 0xA03F0140   ! orbit entry: random() call -> our state chooser
-        .long 0xAC238908, 0xA03F0180   ! enemy kill: rank-add call -> wrapper that also arms revenge bullets
-        .long 0xAC226F14, 0xA03F0400   ! SpawnItem: per-kind setup call -> wrapper (100 medal near the player -> 1,000)
-        .long 0xAC1F0F0C, 0xA03F04E0   ! scene change (game start / next stage): 0x0C1FD750 -> wrapper that clears HIT first
-        .long 0xAC1FF3DC, 0xA03F0200   ! bullet manager: literal for the jsr above (was add #-1,r1 / mov.l r1,@(r0,r8))
-        .long 0xAC227F50, 0xA03F0280   ! energy item init: main routine 0x0C228A60 -> our wrapper (energy only)
-
 ! ---- close-range medals. SpawnItem (0x0C226DC0) stores the item kind (+0x34) and position
 ! (+0x54/+0x58, 16.16) and then calls the per-kind setup 0x0C228960 with r4 = kind; this wrapper
 ! replaces that call. A 100 medal (kind 0) that appears within NEAR_R px of the P1 hitbox
@@ -308,3 +267,85 @@ stgclr:
         .align 2
 L_hitcnt2:  .long 0x0CB363F8
 L_scene:    .long 0x0C1FD750
+
+! ---- revenge bullets fire with normal shots in ship mode. Enemies fire through the shot spawner
+! 0x0C1FF5F0(r4 type, r5 x, r6 y, r7, stack: angle, a1, a2); the enemy shot routines call it through
+! the 12 pointers patched above (0x0C209A68 ... 0x0C2131C8). This wrapper fires the shot as asked and
+! then, while P1 is in ship mode (player state 0x0C7E8660 < 3) and the shot is not itself a revenge
+! bullet (type 0x4A), fires a revenge bullet from the same spot in the same direction, with the same
+! arguments the game's own revenge code uses (r7 = 1, a1 = 0, a2 = 0). Returns the first shot's emitter.
+! In spirit form nothing changes: revenge bullets still come from destroyed enemies, as originally.
+! Frame: [0..11] stack args for our calls, [12] result, [16..28] r4-r7, [32] pr, [36..] caller's args.
+        .org 0x500
+dups:
+        sts.l   pr,@-r15
+        mov.l   r7,@-r15
+        mov.l   r6,@-r15
+        mov.l   r5,@-r15
+        mov.l   r4,@-r15
+        add     #-16,r15
+        mov.l   @(36,r15),r0     ! copy the 3 stack args
+        mov.l   r0,@r15
+        mov.l   @(40,r15),r0
+        mov.l   r0,@(4,r15)
+        mov.l   @(44,r15),r0
+        mov.l   r0,@(8,r15)
+        mov.l   L_spawn3,r0
+        jsr     @r0              ! the shot the game asked for
+        nop
+        mov.l   r0,@(12,r15)
+        mov.l   @(16,r15),r0     ! type
+        cmp/eq  #0x4A,r0
+        bt      51f              ! already a revenge bullet
+        mov.l   L_pst3,r1
+        mov.l   @r1,r0           ! P1 player state
+        cmp/pz  r0
+        bf      51f
+        mov     #3,r1
+        cmp/hs  r1,r0
+        bt      51f              ! 3-5 = spirit form: nothing extra
+        mov.l   @(36,r15),r0     ! same direction
+        mov.l   r0,@r15
+        mov     #0,r0
+        mov.l   r0,@(4,r15)
+        mov.l   r0,@(8,r15)
+        mov     #0x4A,r4         ! revenge bullet
+        mov.l   @(20,r15),r5     ! same position
+        mov.l   @(24,r15),r6
+        mov     #1,r7
+        mov.l   L_spawn3,r0
+        jsr     @r0
+        nop
+51:     mov.l   @(12,r15),r0
+        add     #16,r15
+        mov.l   @r15+,r4
+        mov.l   @r15+,r5
+        mov.l   @r15+,r6
+        mov.l   @r15+,r7
+        lds.l   @r15+,pr
+        rts
+        nop
+        .align 2
+L_spawn3:   .long 0x0C1FF5F0
+L_pst3:     .long 0x0C7E8660
+
+! ---- long patches
+        .org 0x600
+        .long 0xAC22A104, 0xA03F0480   ! item collect: AddScore -> our wrapper
+        .long 0xAC2299D8, 0xA03F0140   ! orbit entry: random() call -> our state chooser
+        .long 0xAC226F14, 0xA03F0400   ! SpawnItem: per-kind setup call -> wrapper (100 medal near the player -> 1,000)
+        .long 0xAC1F0F0C, 0xA03F04E0   ! scene change (game start / next stage): 0x0C1FD750 -> wrapper that clears HIT first
+        .long 0xAC209A68, 0xA03F0500   ! enemy shot: spawner 0x0C1FF5F0 -> wrapper (ship mode: add a revenge bullet)
+        .long 0xAC209B8C, 0xA03F0500   ! enemy shot: spawner 0x0C1FF5F0 -> wrapper (ship mode: add a revenge bullet)
+        .long 0xAC209CA4, 0xA03F0500   ! enemy shot: spawner 0x0C1FF5F0 -> wrapper (ship mode: add a revenge bullet)
+        .long 0xAC209DC4, 0xA03F0500   ! enemy shot: spawner 0x0C1FF5F0 -> wrapper (ship mode: add a revenge bullet)
+        .long 0xAC209F30, 0xA03F0500   ! enemy shot: spawner 0x0C1FF5F0 -> wrapper (ship mode: add a revenge bullet)
+        .long 0xAC20A030, 0xA03F0500   ! enemy shot: spawner 0x0C1FF5F0 -> wrapper (ship mode: add a revenge bullet)
+        .long 0xAC20A1C4, 0xA03F0500   ! enemy shot: spawner 0x0C1FF5F0 -> wrapper (ship mode: add a revenge bullet)
+        .long 0xAC20A364, 0xA03F0500   ! enemy shot: spawner 0x0C1FF5F0 -> wrapper (ship mode: add a revenge bullet)
+        .long 0xAC20A4CC, 0xA03F0500   ! enemy shot: spawner 0x0C1FF5F0 -> wrapper (ship mode: add a revenge bullet)
+        .long 0xAC20A630, 0xA03F0500   ! enemy shot: spawner 0x0C1FF5F0 -> wrapper (ship mode: add a revenge bullet)
+        .long 0xAC20A764, 0xA03F0500   ! enemy shot: spawner 0x0C1FF5F0 -> wrapper (ship mode: add a revenge bullet)
+        .long 0xAC2131C8, 0xA03F0500   ! enemy shot: spawner 0x0C1FF5F0 -> wrapper (ship mode: add a revenge bullet)
+        .long 0xAC1FF3DC, 0xA03F0200   ! bullet manager: literal for the jsr above (was add #-1,r1 / mov.l r1,@(r0,r8))
+        .long 0xAC227F50, 0xA03F0280   ! energy item init: main routine 0x0C228A60 -> our wrapper (energy only)
