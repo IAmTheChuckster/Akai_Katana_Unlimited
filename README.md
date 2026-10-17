@@ -8,7 +8,7 @@ This repository holds only source, tools and notes. **No ROM data is included**;
 Open the web patcher (`index.html`, served by GitHub Pages) and drop your `akatana.zip`. It:
 
 - checks the CRC32 of `u4`, `u2`, `u23` and `u24`;
-- builds the patched `u4` (CRC32 `f4a27491`);
+- builds the patched `u4` (CRC32 `26ea109b`);
 - gives you `akatanagold.zip` (the full set with `u4` replaced), `u4.zip` and the raw `u4`;
 - builds `Akai Katana Gold.mra` for MiSTer (ikacore CV1k), filled in with the CRC32s of the files it found, including the new `u4`.
 
@@ -23,14 +23,14 @@ Spirit form = 念身.
 - **HIT never resets.** Both places that clear the count when its 3-second display timer runs out are disabled. The count carries on for the whole game, across stages. The number is still only shown while it is counting up.
 
 - **Leaving spirit form early is free.** Pressing the spirit button again used to cost a flat 1,600 energy; now you keep what you have left.
-- **Revenge bullets in every mode, 5× as many.** Destroyed enemies fire revenge bullets in ship mode too, whether you kill them with the shot or the laser. You get 5× the original spirit-form count: 10 × lives, ×4 for big enemies. Not every kill qualifies, as before.
+- **Revenge bullets in every mode.** Destroyed enemies fire revenge bullets in ship mode too, whether you kill them with the shot or the laser, with the original count (2 × lives, ×4 for big enemies; not every kill qualifies, as before).
 - **Bullets slow down near the orb.** Enemy bullets within 24 px of the orb (the familiar ball, whose live position is at `0CA3FBB4`/`0CA3FBB8` for every character) move at half speed, and return to full speed as soon as they leave. This applies in ship and spirit form. It uses the game's own per-bullet slow percentage (bullet+0x138), which the bullet move code applies as velocity × (100 − slow) / 100.
 - **Energy balls follow you into spirit form.** Energy balls (item kind 12) circling the orb are no longer sent to be collected when you switch to spirit form. They circle the hitbox instead, the way gold used to (radius about 50 px widening to about 78 px), and go back to the orb when spirit form ends. Their lifetime (item+0xB4; they normally expire about 510 frames after appearing) is paused while you're in spirit form.
-- **Revenge bullets cancel into 10,000 gold.** When a revenge bullet (type `0x4A`) is cancelled near an enemy destroyed in spirit form, it drops 10,000 gold (kind 2) instead of 100. Other bullets still drop 100.
 
-- **Gold is worth medal + HIT × 1,000.** Each gold piece collected scores its medal value (item+0x50: 100 / 1,000 / 10,000) plus the HIT count (including this piece) × 1,000. The value is written back into the item before it is added, so the gold score total (`0C27B670`) and the trailing popup (`0C22A320`) show the same amount. Example: a 100 medal at 359 HIT adds 359,100.
+- **Close-range medals.** A 100 medal that appears within 50 px of your hitbox (for example from an enemy you destroy up close, or bullets cancelled next to you) becomes a 1,000 medal. Boss gold is still a 10,000 medal.
+- **Gold is worth medal × HIT.** Each gold piece collected scores its medal value (item+0x50: 100 / 1,000 / 10,000) × the HIT count (including this piece). The value is written back into the item before it is added, so the gold score total (`0C27B670`) and the trailing popup (`0C22A320`) show the same amount. Example: a 1,000 medal at 359 HIT adds 359,000.
 
-Side effect: gold no longer ages while orbiting, so a normal gold medal is worth 100 (it used to grow to 1,000 and 10,000). Gold from a defeated boss or a cancelled revenge bullet is a 10,000 medal.
+Side effect: gold no longer ages while orbiting, so a normal gold medal is worth 100 (it used to grow to 1,000 and 10,000); only close-range and boss medals are bigger.
 
 ## How it works
 
@@ -45,14 +45,12 @@ The main program is stored compressed in u4 and unpacked into RAM at boot, so th
 | `0C22989C` | `E402` mov #2,r4 | `6423` mov r2,r4 | store the chosen state |
 | `0C2298A0` | `E602` mov #2,r6 | `6623` mov r2,r6 | dispatch the chosen state this frame |
 | `0C226F34` | `4A0B` jsr @r10 (AddHit) | `0009` nop | no HIT on spawn |
-| `0C22A104` | `0C1F8B20` (AddScore) | `A03F0100` | item collect calls a wrapper: for gold (item kind 0–2) AddHit(1), then item+0x50 = medal + HIT × 1,000, then AddScore; other items AddScore unchanged |
+| `0C22A104` | `0C1F8B20` (AddScore) | `A03F0100` | item collect calls a wrapper: for gold (item kind 0–2) AddHit(1), then item+0x50 = medal × HIT, then AddScore; other items AddScore unchanged |
 | `0C27C724` | `1B55` mov.l r5,@(20,r11) | `0009` | HIT not cleared when the timer ends |
 | `0C27B666` | `1205` mov.l r0,@(20,r2) | `0009` | HIT not cleared (second timer path) |
 | `0C217D9C` | `0640` (1600) | `0000` | leaving spirit form early costs 0 energy (SubEnergy amount at `0C217D24`) |
-| `0C238908` | `0C1FC140` (rank add) | `A03F0180` | enemy kill routine (`0C2385F0`): wrapper calls the rank add as before, then sets the revenge flag [r14+36] = 1 and count [r14+40] = 10 × lives (5 × the spirit branch's 2 × lives), so both branches fire 5× revenge bullets |
-| `0C2388D2` | `1ECA` mov.l r12,@(40,r14) | `0009` | spirit branch no longer overwrites the count with 2 × lives |
-| `0C1FFFDC` | `0C226DC0` (SpawnItem) | `A03F01C0` | cancelled-bullet gold (bullet in r8): wrapper turns kind 0–2 into kind 2 when the bullet type (bullet+0x0C) is `0x4A` |
-| `0C20084C` | `0C226DC0` (SpawnItem) | `A03F01E0` | same, for the other cancel site (bullet in r12) |
+| `0C238908` | `0C1FC140` (rank add) | `A03F0180` | enemy kill routine (`0C2385F0`): wrapper calls the rank add as before, then sets the revenge flag [r14+36] = 1 and count [r14+40] = 2 × lives, as the spirit branch does, so the normal branch fires revenge bullets too |
+| `0C226F14` | `0C228960` (per-kind setup) | `A03F0400` | SpawnItem: a kind 0 (100) medal spawned within 50 px of the P1 hitbox becomes kind 1 (1,000) |
 | `0C22994E` | `890F` bt 0x0C229970 | `0009` | spirit branch: energy (item+0xB0 == 4) is no longer forced to release (state 4) |
 | `0C227F50` | `0C228A60` (item main) | `A03F0280` | energy items run through a wrapper: item+0xA4 = 1 in spirit form (orbit the player, like gold; skips the other forced release at `0C229948`), 0 in ship form; lifetime item+0xB4 paused in spirit form |
 | `0C1FF3D2`–`0C1FF3DE` | slow-% countdown (`90B1 018E 2118 8D03 6B83 71FF 0816`) | `D102 410B 0009 A002 0009` + literal `A03F0200` | bullet manager calls our orb routine: slow = 50 inside 24 px of the P1 orb, back to 0 when it leaves; any other slow value counts down as before |
@@ -64,7 +62,7 @@ The target-player check matters. Sending items to release before they have picke
 Requires `binutils-sh-elf` (`sh-elf-as`, `sh-elf-objcopy`) and Python 3.
 
 ```
-make U4=/path/to/original/u4                              # -> build/u4 (CRC32 f4a27491)
+make U4=/path/to/original/u4                              # -> build/u4 (CRC32 26ea109b)
 python3 tools/web/diff.py /path/to/original/u4 build/u4 > patch.json
 python3 tools/web/gen.py patch.json                       # regenerates index.html and mister/*.mra
 ```
