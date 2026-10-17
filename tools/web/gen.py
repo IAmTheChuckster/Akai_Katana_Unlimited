@@ -153,7 +153,8 @@ html = r'''<!doctype html>
       <li><strong>Gold is collected automatically.</strong> Gold no longer circles the ship until spirit form ends. Each piece flies straight to the ship and is collected.</li>
       <li><strong>Each collected gold piece adds 1 HIT.</strong> HIT used to count gold as it appeared.</li>
       <li><strong>HIT never resets.</strong> It keeps counting for the whole game instead of clearing about 3 seconds after the last hit. The HIT number is still only shown while it's counting up.</li>
-      <li>Because gold is collected straight away, it doesn't grow in value while it circles: every piece is worth 100 points. Gold from a defeated boss still starts at 10,000.</li>
+      <li>Because gold is collected straight away, it doesn't grow in value while it circles: the medal is worth 100 points. Gold from a defeated boss or a cancelled revenge bullet is a 10,000 medal.</li>
+      <li><strong>Gold is worth medal + HIT × 1,000.</strong> Each piece collected adds its medal value (100 / 1,000 / 10,000) plus 1,000 for every HIT, counting itself. The gold score total and the trailing popup show that same amount (e.g. a 100 medal at 359 HIT adds 359,100).</li>
       <li><strong>Leaving spirit form early is free.</strong> Pressing the spirit button again used to cost 1,600 energy; now you keep what you have left.</li>
       <li><strong>Revenge bullets in every mode, 5× as many.</strong> Destroyed enemies fire revenge bullets in ship mode too, whether you kill them with the shot or the laser. You get 5 times the normal count: 10 × your lives, ×4 for big enemies.</li>
       <li><strong>Bullets slow down near the orb.</strong> Enemy bullets within 24 px of the orb move at half speed and return to full speed as soon as they leave. This works for every character, in ship and spirit form.</li>
