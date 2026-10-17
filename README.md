@@ -8,7 +8,7 @@ This repository holds only source, tools and notes. **No ROM data is included**;
 Open the web patcher (`index.html`, served by GitHub Pages) and drop your `akatana.zip`. It:
 
 - checks the CRC32 of `u4`, `u2`, `u23` and `u24`;
-- builds the patched `u4` (CRC32 `99ea7b86`);
+- builds the patched `u4` (CRC32 `f4c1195f`);
 - gives you `akatanagold.zip` (the full set with `u4` replaced), `u4.zip` and the raw `u4`;
 - builds `Akai Katana Gold.mra` for MiSTer (ikacore CV1k), filled in with the CRC32s of the files it found, including the new `u4`.
 
@@ -62,7 +62,7 @@ The target-player check matters. Sending items to release before they have picke
 Requires `binutils-sh-elf` (`sh-elf-as`, `sh-elf-objcopy`) and Python 3.
 
 ```
-make U4=/path/to/original/u4                              # -> build/u4 (CRC32 99ea7b86)
+make U4=/path/to/original/u4                              # -> build/u4 (CRC32 f4c1195f)
 python3 tools/web/diff.py /path/to/original/u4 build/u4 > patch.json
 python3 tools/web/gen.py patch.json                       # regenerates index.html and mister/*.mra
 ```

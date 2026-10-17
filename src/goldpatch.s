@@ -211,17 +211,20 @@ L_orb:  .long   0x0CA3FBB4
 ! as gold (0x0C228A60). In spirit form the game sends every energy ball to be collected (state 4) at
 ! 0x0C229948 (item+0xA4 == 0) and 0x0C229978 (item+0xB0 == 4, the energy marker). We nop the second
 ! check, and run energy items through this wrapper, which each frame sets item+0xA4 = 1 while P1 is in
-! spirit form (the flag gold has while it orbits the player) and 0 otherwise (energy's normal value), so
+! spirit form (P1 player state 0x0C7E8660 = 3-5; the same states the item routine switches on) (the
+! flag gold has while it orbits the player) and 0 otherwise (energy's normal value), so
 ! orbiting energy circles the hitbox like gold did, and goes back to the orb when spirit form ends.
 ! Energy balls normally expire about 510 frames after they appear (lifetime item+0xB4 counts up, state 6
 ! past 500, 0x0C229210); the wrapper pauses that clock during spirit form so orbiting energy is never
 ! lost by going into spirit form. r4 = item.
         .org 0x280
 emain:
-        mov.l   L_spf,r1
-        mov.b   @r1,r0           ! P1 spirit flag (0x0C7E8663)
+        mov.l   L_pst,r1
+        mov.l   @r1,r0           ! P1 player state (player+0x38, 0x0C7E8660): 3-5 = spirit form
+        add     #-3,r0
+        mov     #3,r1
+        cmp/hs  r1,r0            ! T = not in spirit form
         mov.w   L_oA4,r1
-        tst     r0,r0
         add     r4,r1            ! r1 = item+0xA4
         bt      20f
         mov     #1,r0
@@ -234,14 +237,15 @@ emain:
         add     #-1,r0           ! cancel this frame's tick: lifetime paused in spirit form
         bra     21f
         mov.l   r0,@r1
-20:     mov.l   r0,@r1           ! ship: item+0xA4 = 0 (orbit the orb as normal)
+20:     mov     #0,r0
+        mov.l   r0,@r1           ! ship: item+0xA4 = 0 (orbit the orb as normal)
 21:     mov.l   L_imain,r1
         jmp     @r1
         nop
 L_oA4:  .word   0xA4
 L_oB4:  .word   0xB4
         .align 2
-L_spf:  .long   0x0C7E8663
+L_pst:  .long   0x0C7E8660
 L_imain: .long  0x0C228A60
 
 ! ---- word patches (address, value)
