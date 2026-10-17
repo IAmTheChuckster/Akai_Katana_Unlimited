@@ -8,7 +8,7 @@ This repository holds only source, tools and notes. **No ROM data is included**;
 Open the web patcher (`index.html`, served by GitHub Pages) and drop your `akatana.zip`. It:
 
 - checks the CRC32 of `u4`, `u2`, `u23` and `u24`;
-- builds the patched `u4` (CRC32 `eb8366f2`);
+- builds the patched `u4` (CRC32 `4d9518c8`);
 - gives you `akatanagold.zip` (the full set with `u4` replaced), `u4.zip` and the raw `u4`;
 - builds `Akai Katana Gold.mra` for MiSTer (ikacore CV1k), filled in with the CRC32s of the files it found, including the new `u4`.
 
@@ -23,7 +23,7 @@ Spirit form = 念身.
 - **HIT resets each stage.** The game's own clears (3 seconds after the last hit) are disabled, so HIT keeps counting through a stage; it goes back to 0 when a game starts and when the next stage begins (scene change at `0C1F0E10`).
 
 - **Leaving spirit form early is free.** Pressing the spirit button again used to cost a flat 1,600 energy; now you keep what you have left.
-- **Revenge bullets in every mode.** Destroyed enemies fire revenge bullets in ship mode too, whether you kill them with the shot or the laser, with the original count (2 × lives, ×4 for big enemies; not every kill qualifies, as before).
+- **Revenge bullets fire with normal shots in ship mode.** In ship mode, every time an enemy fires a normal bullet it also fires a revenge bullet (type `0x4A`) from the same spot in the same direction, and destroying an enemy no longer fires a revenge burst. In spirit form nothing changes: destroyed enemies fire revenge bullets as in the original. Revenge bullets cancel into gold like any other bullet.
 - **Bullets slow down near the orb.** Enemy bullets within 24 px of the orb (the familiar ball, whose live position is at `0CA3FBB4`/`0CA3FBB8` for every character) move at half speed, and return to full speed as soon as they leave. This applies in ship and spirit form. It uses the game's own per-bullet slow percentage (bullet+0x138), which the bullet move code applies as velocity × (100 − slow) / 100.
 - **Energy balls follow you into spirit form.** Energy balls (item kind 12) circling the orb are no longer sent to be collected when you switch to spirit form. They circle the hitbox instead, the way gold used to (radius about 50 px widening to about 78 px), and go back to the orb when spirit form ends. Their lifetime (item+0xB4; they normally expire about 510 frames after appearing) is paused while you're in spirit form.
 
@@ -46,11 +46,11 @@ The main program is stored compressed in u4 and unpacked into RAM at boot, so th
 | `0C2298A0` | `E602` mov #2,r6 | `6623` mov r2,r6 | dispatch the chosen state this frame |
 | `0C226F34` | `4A0B` jsr @r10 (AddHit) | `0009` nop | no HIT on spawn |
 | `0C22A104` | `0C1F8B20` (AddScore) | `A03F0480` | item collect calls a wrapper: for gold (item kind 0–2) AddHit(1), then item+0x50 = medal × HIT ÷ 10, then AddScore; other items AddScore unchanged |
+| `0C209A68`, `0C209B8C`, `0C209CA4`, `0C209DC4`, `0C209F30`, `0C20A030`, `0C20A1C4`, `0C20A364`, `0C20A4CC`, `0C20A630`, `0C20A764`, `0C2131C8` | `0C1FF5F0` (shot spawner) | `A03F0500` | enemy shot routines call a wrapper: fire the shot, then in ship mode (P1 state < 3) also spawn a revenge bullet (type 0x4A, same x/y and direction, r7 = 1) |
 | `0C1F0F0C` | `0C1FD750` | `A03F04E0` | scene change (game start, next stage): wrapper clears the HIT count (`0CB363F8`) first |
 | `0C27C724` | `1B55` mov.l r5,@(20,r11) | `0009` | HIT not cleared when the timer ends (it is cleared at each new stage instead) |
 | `0C27B666` | `1205` mov.l r0,@(20,r2) | `0009` | HIT not cleared (second timer path) |
 | `0C217D9C` | `0640` (1600) | `0000` | leaving spirit form early costs 0 energy (SubEnergy amount at `0C217D24`) |
-| `0C238908` | `0C1FC140` (rank add) | `A03F0180` | enemy kill routine (`0C2385F0`): wrapper calls the rank add as before, then sets the revenge flag [r14+36] = 1 and count [r14+40] = 2 × lives, as the spirit branch does, so the normal branch fires revenge bullets too |
 | `0C226F14` | `0C228960` (per-kind setup) | `A03F0400` | SpawnItem: a kind 0 (100) medal spawned within 50 px of the P1 hitbox becomes kind 1 (1,000) |
 | `0C22994E` | `890F` bt 0x0C229970 | `0009` | spirit branch: energy (item+0xB0 == 4) is no longer forced to release (state 4) |
 | `0C227F50` | `0C228A60` (item main) | `A03F0280` | energy items run through a wrapper: item+0xA4 = 1 in spirit form (orbit the player, like gold; skips the other forced release at `0C229948`), 0 in ship form; lifetime item+0xB4 paused in spirit form |
@@ -63,7 +63,7 @@ The target-player check matters. Sending items to release before they have picke
 Requires `binutils-sh-elf` (`sh-elf-as`, `sh-elf-objcopy`) and Python 3.
 
 ```
-make U4=/path/to/original/u4                              # -> build/u4 (CRC32 eb8366f2)
+make U4=/path/to/original/u4                              # -> build/u4 (CRC32 4d9518c8)
 python3 tools/web/diff.py /path/to/original/u4 build/u4 > patch.json
 python3 tools/web/gen.py patch.json                       # regenerates index.html and mister/*.mra
 ```
