@@ -23,4 +23,7 @@ be[OFF:OFF + len(patch)] = patch
 be[0x1D4:0x1D8] = struct.pack('>I', 0xA03F0000)  # boot calls our hook before 0x0C1DE164
 out = bytearray(len(be)); out[0::2] = be[1::2]; out[1::2] = be[0::2]
 open(dst, 'wb').write(out)
-print('written %s crc32 %08x' % (dst, zlib.crc32(out) & 0xffffffff))
+outcrc = zlib.crc32(out) & 0xffffffff
+print('written %s crc32 %08x' % (dst, outcrc))
+if outcrc != 0xd899ec64:
+    print('warning: expected d899ec64 for the released patch')
