@@ -22,14 +22,14 @@ hook:
         nop
         .align 2
 L_wtbl: .long   0xA03F0300
-L_wcnt: .long   13
+L_wcnt: .long   12
 L_ltbl: .long   0xA03F0380
-L_lcnt: .long   7
+L_lcnt: .long   6
 L_orig: .long   0x0C1DE164
 
 ! ---- collect wrapper (called instead of AddScore(r4 player, r5 value, r6) at 0x0C22A0DA; r9 = item).
 ! For gold (item kind at +0x34 is 0-2): count the HIT first (AddHit(1)), then make the piece worth
-!   medal score (item+0x50) + HIT count (0x0CB363F8) x 1000
+!   medal score (item+0x50) x HIT count (0x0CB363F8)
 ! and write that back into item+0x50 before adding it. The collect code reads item+0x50 again for the
 ! gold score display (0x0C27B670) and the trailing popup (0x0C22A320), so both show the same amount.
 ! Other items: AddScore unchanged.
@@ -46,21 +46,18 @@ wrap:
         mov     #1,r4            ! HIT + 1
         mov.l   L_hitcnt,r1
         mov.l   @r1,r1           ! hit score (including this piece)
-        mov.w   L_1000,r2
-        mul.l   r2,r1
-        sts     macl,r1          ! hit score x 1000
         mov     r9,r2
         add     #0x50,r2
         mov.l   @r2,r5           ! medal score
-        add     r1,r5
-        mov.l   r5,@r2           ! item value = medal + hit x 1000 (read again for gold score + popup)
+        mul.l   r1,r5
+        sts     macl,r5          ! medal x hit
+        mov.l   r5,@r2           ! item value = medal x hit (read again for gold score + popup)
         mov.l   @r15+,r4
         lds.l   @r15+,pr
         mov     #0,r6
 3:      mov.l   L_addscore,r0
         jmp     @r0              ! AddScore(r4, r5, r6)
         nop
-L_1000: .word   1000
         .align 2
 L_addhit:   .long 0x0C27B500
 L_hitcnt:   .long 0x0CB363F8
@@ -102,8 +99,7 @@ L_rand: .long   0x0C1E4190
 ! The kill routine (0x0C2385F0) only fires revenge bullets when its frame flag [r14+36] is set and
 ! uses [r14+40] (2 x lives) as the count; originally only the spirit-form branch sets them.
 ! Both branches call the rank-add routine through one pointer (0x0C238908), so we call it as before
-! and then arm the revenge bullets the way the spirit branch does, at 5x the normal count
-! (the spirit branch's own store of 2 x lives at 0x0C2388D2 is nopped so ours is kept). r8 = player life (0x640 per life)
+! and then arm the revenge bullets the same way the spirit branch does (count 2 x lives). r8 = player life (0x640 per life)
 ! in both branches at this point; r14 is the kill routine's frame.
         .org 0x180
 revenge:
@@ -119,10 +115,7 @@ revenge:
         sub     r2,r1
         bra     5b
         add     #1,r3
-6:      mov     r3,r1
-        shll2   r3
-        add     r1,r3            ! 5 x lives
-        add     r3,r3            ! 10 x lives = 5 x the game's own count (2 x lives)
+6:      add     r3,r3            ! 2 x lives (the spirit branch's own count)
         mov.l   r3,@(40,r14)
         mov     #1,r1
         mov.l   r1,@(36,r14)     ! fire revenge bullets
@@ -132,40 +125,6 @@ revenge:
 L_1600: .word   1600
         .align 2
 L_rankadd: .long 0x0C1FC140
-
-! ---- cancelled bullet -> gold. In spirit form, bullets close to a destroyed enemy are cancelled
-! (bullet state 9) and each one drops 100 gold through SpawnItem, from 0x0C1FFFA6 (bullet in r8) or
-! 0x0C200830 (bullet in r12); these wrappers replace SpawnItem for those call sites (r4 = item kind). Gold (kind 0-2) from a revenge bullet (type 0x4A at bullet+0x0C)
-! becomes kind 2 = 10,000 gold. Everything else is passed through unchanged.
-        .org 0x1C0
-cgold:
-        mov     #3,r1
-        cmp/hs  r1,r4            ! kind >= 3 (unsigned) -> not gold
-        bt      7f
-        mov.l   @(12,r8),r0      ! bullet type
-        cmp/eq  #0x4A,r0
-        bf      7f
-        mov     #2,r4            ! 10,000 gold
-7:      mov.l   L_spawn,r0
-        jmp     @r0
-        nop
-        .align 2
-L_spawn: .long 0x0C226DC0
-
-        .org 0x1E0
-cgold12:
-        mov     #3,r1
-        cmp/hs  r1,r4
-        bt      8f
-        mov.l   @(12,r12),r0     ! bullet type
-        cmp/eq  #0x4A,r0
-        bf      8f
-        mov     #2,r4
-8:      mov.l   L_spawn2,r0
-        jmp     @r0
-        nop
-        .align 2
-L_spawn2: .long 0x0C226DC0
 
 ! ---- orb slow-down. Replaces the bullet manager's per-bullet step at 0x0C1FF3D2 that counts down the
 ! bullet's slow percentage (bullet+0x138; the move code at 0x0C2010F0 moves a bullet by
@@ -272,7 +231,6 @@ L_imain: .long  0x0C228A60
         .long 0xAC27C724, 0x0009   ! HIT: do not clear count when display timer ends
         .long 0xAC27B666, 0x0009   ! HIT: do not clear count (second timer path)
         .long 0xAC217D9C, 0x0000   ! spirit form: leaving early costs 0 energy (was 0x0640 = 1600)
-        .long 0xAC2388D2, 0x0009   ! enemy kill, spirit branch: keep our revenge count (was mov.l r12,@(40,r14))
         .long 0xAC1FF3D2, 0xD102   ! bullet manager: mov.l @(2,pc),r1  (r1 = orb-slow routine)   was mov.w 0x138,r0
         .long 0xAC1FF3D4, 0x410B   !   jsr @r1                                                     was mov.l @(r0,r8),r1
         .long 0xAC1FF3D6, 0x0009   !   nop                                                         was tst r1,r1
@@ -284,7 +242,48 @@ L_imain: .long  0x0C228A60
         .long 0xAC22A104, 0xA03F0100   ! item collect: AddScore -> our wrapper
         .long 0xAC2299D8, 0xA03F0140   ! orbit entry: random() call -> our state chooser
         .long 0xAC238908, 0xA03F0180   ! enemy kill: rank-add call -> wrapper that also arms revenge bullets
-        .long 0xAC1FFFDC, 0xA03F01C0   ! cancelled bullet -> gold (bullet in r8): SpawnItem -> wrapper (revenge -> 10,000 gold)
-        .long 0xAC20084C, 0xA03F01E0   ! cancelled bullet -> gold (bullet in r12): SpawnItem -> wrapper (revenge -> 10,000 gold)
+        .long 0xAC226F14, 0xA03F0400   ! SpawnItem: per-kind setup call -> wrapper (100 medal near the player -> 1,000)
         .long 0xAC1FF3DC, 0xA03F0200   ! bullet manager: literal for the jsr above (was add #-1,r1 / mov.l r1,@(r0,r8))
         .long 0xAC227F50, 0xA03F0280   ! energy item init: main routine 0x0C228A60 -> our wrapper (energy only)
+
+! ---- close-range medals. SpawnItem (0x0C226DC0) stores the item kind (+0x34) and position
+! (+0x54/+0x58, 16.16) and then calls the per-kind setup 0x0C228960 with r4 = kind; this wrapper
+! replaces that call. A 100 medal (kind 0) that appears within NEAR_R px of the P1 hitbox
+! (0x0C7E86FC/0x0C7E8700) becomes a 1,000 medal (kind 1). r6 = item; the caller reloads r6 and
+! does not use r5/r7 afterwards.
+        .equ NEAR_R, 50
+        .org 0x400
+near:
+        tst     r4,r4
+        bf      30f              ! only 100 medals
+        mov     r6,r1
+        add     #0x54,r1
+        mov.l   @r1+,r2          ! medal x
+        mov.l   @r1,r3           ! medal y
+        mov.l   L_hb,r1
+        mov.l   @r1+,r5          ! hitbox x
+        mov.l   @r1,r7           ! hitbox y
+        sub     r5,r2
+        shlr16  r2
+        exts.w  r2,r2            ! dx px
+        sub     r7,r3
+        shlr16  r3
+        exts.w  r3,r3            ! dy px
+        mul.l   r2,r2
+        sts     macl,r2
+        mul.l   r3,r3
+        sts     macl,r3
+        add     r3,r2
+        mov.w   L_nr2,r3
+        cmp/hs  r3,r2
+        bt      30f              ! farther than NEAR_R
+        mov     #1,r4
+        mov.l   r4,@(52,r6)      ! kind 1: 1,000 medal
+30:     mov.l   L_kset,r0
+        jmp     @r0
+        nop
+L_nr2:  .word   NEAR_R*NEAR_R
+        .align 2
+L_hb:   .long   0x0C7E86FC
+L_kset: .long   0x0C228960
+
