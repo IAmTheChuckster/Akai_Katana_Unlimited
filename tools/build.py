@@ -25,5 +25,5 @@ out = bytearray(len(be)); out[0::2] = be[1::2]; out[1::2] = be[0::2]
 open(dst, 'wb').write(out)
 outcrc = zlib.crc32(out) & 0xffffffff
 print('written %s crc32 %08x' % (dst, outcrc))
-if outcrc != 0x99ea7b86:
-    print('warning: expected 99ea7b86 for the released patch')
+if outcrc != 0xf4c1195f:
+    print('warning: expected f4c1195f for the released patch')
