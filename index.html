@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Akai Katana Gold Patcher</title>
+<title>Akai Katana Unlimited Patcher</title>
 <style>
   :root {
     --bg: #fbf6f2;
@@ -105,8 +105,8 @@
 </head>
 <body>
 <main>
-  <h1>Akai Katana <span>Gold</span> Patcher</h1>
-  <p class="lead">Patches the original Akai Katana program ROM (u4) with the Gold changes and builds a matching MiSTer <code>.mra</code>. Everything runs in your browser; your ROMs are never uploaded.</p>
+  <h1>Akai Katana <span>Unlimited</span> Patcher</h1>
+  <p class="lead">Patches the original Akai Katana program ROM (u4) with the Unlimited changes and builds a matching MiSTer <code>.mra</code>. Everything runs in your browser; your ROMs are never uploaded.</p>
 
   <section>
     <h2><b>1</b>Load your files</h2>
@@ -130,21 +130,21 @@
     <h2><b>3</b>Download</h2>
     <div class="scroll"><table>
       <thead><tr><th>File</th><th>Expected CRC32</th><th>Built CRC32</th><th>Status</th></tr></thead>
-      <tbody><tr><td><code>u4</code> (Gold)</td><td><code>4d9518c8</code></td><td id="builtcrc">-</td><td id="builtst" class="wait">Waiting</td></tr></tbody>
+      <tbody><tr><td><code>u4</code> (Unlimited)</td><td><code>4d9518c8</code></td><td id="builtcrc">-</td><td id="builtst" class="wait">Waiting</td></tr></tbody>
     </table></div>
     <div class="btns" style="margin-top:14px">
-      <a class="btn disabled" id="dlzip" href="#">Download akatanagold.zip</a>
+      <a class="btn disabled" id="dlzip" href="#">Download akatanaultd.zip</a>
       <a class="btn alt disabled" id="dlu4zip" href="#">u4.zip</a>
       <a class="btn alt disabled" id="dlu4" href="#">raw u4</a>
-      <a class="btn alt" id="dlmra" href="#">Akai Katana Gold.mra (MiSTer)</a>
+      <a class="btn alt" id="dlmra" href="#">Akai Katana Unlimited.mra (MiSTer)</a>
     </div>
-    <p class="note"><code>akatanagold.zip</code> is the full set with <code>u4</code> replaced; <code>u2</code>, <code>u23</code> and <code>u24</code> are copied unchanged. On real hardware, keep a backup of your original u4 flash.</p>
-    <p class="note"><b>MiSTer:</b> the <code>.mra</code> is for the ikacore CV1k core. Put it with your other arcade <code>.mra</code> files and <code>akatanagold.zip</code> in your MAME ROM folder (<code>games/mame</code>). It loads <code>akatanagold.zip</code> and checks for the Gold u4 (<code>4d9518c8</code>). After you load a zip, the <code>.mra</code> also uses the CRC32s of the <code>u2</code>, <code>u23</code> and <code>u24</code> it found, so it always matches your set.</p>
+    <p class="note"><code>akatanaultd.zip</code> is the full set with <code>u4</code> replaced; <code>u2</code>, <code>u23</code> and <code>u24</code> are copied unchanged. On real hardware, keep a backup of your original u4 flash.</p>
+    <p class="note"><b>MiSTer:</b> the <code>.mra</code> is for the ikacore CV1k core. Put it with your other arcade <code>.mra</code> files and <code>akatanaultd.zip</code> in your MAME ROM folder (<code>games/mame</code>). It loads <code>akatanaultd.zip</code> and checks for the Unlimited u4 (<code>4d9518c8</code>). After you load a zip, the <code>.mra</code> also uses the CRC32s of the <code>u2</code>, <code>u23</code> and <code>u24</code> it found, so it always matches your set.</p>
   </section>
 
   <section>
-    <h2>Gold</h2>
-    <p style="margin:0">Changes (spirit form = 念身):</p>
+    <h2>Changes</h2>
+    <p style="margin:0">Spirit form = 念身.</p>
     <ul>
       <li><strong>Gold is collected automatically.</strong> Gold no longer circles the ship until spirit form ends. Each piece flies straight to the ship and is collected.</li>
       <li><strong>Each collected gold piece adds 1 HIT.</strong> HIT used to count gold as it appeared.</li>
@@ -169,7 +169,7 @@ const ORIGINAL_CRC = 0x613fd380;
 const OUT_CRC = 0x4d9518c8;
 const U4_SIZE = 0x400000;
 const PATCH = [[468, "P6AAAA=="], [4128768, "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"]]; // [file offset, base64 bytes] applied to the original u4
-const MRA_TEMPLATE = "<!--\n  ikacore_CV1k MRA - Akai Katana Gold (Akai Katana, Japan, 2010/ 8/13 MASTER VER., Gold patch).\n\n  DELIVERY: the NAND and YMZ images do not stream over the ioctl/SPI\n  lane.  Both roms carry an `address=` attribute, so Main_MiSTer\n  assembles them and memcpys them straight into DDR3; the fabric sees\n  only a download pulse for those two.  Only u4 streams, so the ioctl\n  lane carries 4 MiB instead of the old 152 MiB.  Needs a Main_MiSTer\n  that parses `address` (2021 or later).\n\n  Rom order is deliberate - DDR3 first, index 0 LAST.  Index 0's download\n  is what finally releases the CPU, so every image is in place before the\n  core runs, and any spurious run in an inter-rom gap is wiped by the u4\n  download's own reset hold.\n\n    <rom index=\"1\">  DDR3 0x34400000  u2  NAND dump incl. spare (132 MiB,\n                                          exact size)\n    <rom index=\"2\">  DDR3 0x3C800000  u23 YMZ chip 0, zero-padded to the\n                                          8 MiB slot\n                     DDR3 0x3D000000  u24 YMZ chip 1, zero-padded to the\n                                          8 MiB slot\n    <rom index=\"0\">  ioctl stream     u4  program NOR x1 (a real 4 MiB\n                                          flash; Gold-patched u4)\n-->\n<misterromdescription>\n    <about author=\"ika-musume\" source=\"https://github.com/ika-musume/ikacore_CV1k\"/>\n    <name>Akai Katana Gold (Japan, 2010/ 8/13 MASTER VER., Gold patch)</name>\n    <setname>akatanagold</setname>\n    <year>2010</year>\n    <manufacturer>Cave</manufacturer>\n    <category>Shooter</category>\n    <rbf>ikacore_CV1k</rbf>\n\n    <rom index=\"1\" address=\"0x34400000\" zip=\"akatanagold.zip\" md5=\"none\">\n        <part name=\"u2\"  crc=\"89a2e1a5\"/>\n    </rom>\n\n    <rom index=\"2\" address=\"0x3C800000\" zip=\"akatanagold.zip\" md5=\"none\">\n        <part name=\"u23\" crc=\"34a67e24\"/>\n        <part repeat=\"0x400000\">00</part>\n        <part name=\"u24\" crc=\"10760fed\"/>\n        <part repeat=\"0x400000\">00</part>\n    </rom>\n\n    <nvram index=\"3\" size=\"135680\"/>\n\n    <rom index=\"0\" zip=\"akatanagold.zip\" md5=\"none\">\n        <part name=\"u4\"  crc=\"@U4CRC@\"/>\n    </rom>\n\n    <buttons names=\"B1,B2,B3,B4,Start,Coin,Test,Service,Save State\" default=\"A,B,X,Y,Start,R,L,Select\"/>\n</misterromdescription>\n";
+const MRA_TEMPLATE = "<!--\n  ikacore_CV1k MRA - Akai Katana Unlimited (Akai Katana, Japan, 2010/ 8/13 MASTER VER., Unlimited patch).\n\n  DELIVERY: the NAND and YMZ images do not stream over the ioctl/SPI\n  lane.  Both roms carry an `address=` attribute, so Main_MiSTer\n  assembles them and memcpys them straight into DDR3; the fabric sees\n  only a download pulse for those two.  Only u4 streams, so the ioctl\n  lane carries 4 MiB instead of the old 152 MiB.  Needs a Main_MiSTer\n  that parses `address` (2021 or later).\n\n  Rom order is deliberate - DDR3 first, index 0 LAST.  Index 0's download\n  is what finally releases the CPU, so every image is in place before the\n  core runs, and any spurious run in an inter-rom gap is wiped by the u4\n  download's own reset hold.\n\n    <rom index=\"1\">  DDR3 0x34400000  u2  NAND dump incl. spare (132 MiB,\n                                          exact size)\n    <rom index=\"2\">  DDR3 0x3C800000  u23 YMZ chip 0, zero-padded to the\n                                          8 MiB slot\n                     DDR3 0x3D000000  u24 YMZ chip 1, zero-padded to the\n                                          8 MiB slot\n    <rom index=\"0\">  ioctl stream     u4  program NOR x1 (a real 4 MiB\n                                          flash; Unlimited-patched u4)\n-->\n<misterromdescription>\n    <about author=\"ika-musume\" source=\"https://github.com/ika-musume/ikacore_CV1k\"/>\n    <name>Akai Katana Unlimited (Japan, 2010/ 8/13 MASTER VER., Unlimited patch)</name>\n    <setname>akatanaultd</setname>\n    <year>2010</year>\n    <manufacturer>Cave</manufacturer>\n    <category>Shooter</category>\n    <rbf>ikacore_CV1k</rbf>\n\n    <rom index=\"1\" address=\"0x34400000\" zip=\"akatanaultd.zip\" md5=\"none\">\n        <part name=\"u2\"  crc=\"89a2e1a5\"/>\n    </rom>\n\n    <rom index=\"2\" address=\"0x3C800000\" zip=\"akatanaultd.zip\" md5=\"none\">\n        <part name=\"u23\" crc=\"34a67e24\"/>\n        <part repeat=\"0x400000\">00</part>\n        <part name=\"u24\" crc=\"10760fed\"/>\n        <part repeat=\"0x400000\">00</part>\n    </rom>\n\n    <nvram index=\"3\" size=\"135680\"/>\n\n    <rom index=\"0\" zip=\"akatanaultd.zip\" md5=\"none\">\n        <part name=\"u4\"  crc=\"@U4CRC@\"/>\n    </rom>\n\n    <buttons names=\"B1,B2,B3,B4,Start,Coin,Test,Service,Save State\" default=\"A,B,X,Y,Start,R,L,Select\"/>\n</misterromdescription>\n";
 const DEFAULT_PART_CRC = { u2: "89a2e1a5", u23: "34a67e24", u24: "10760fed" };
 
 const CRC_TABLE = (() => {
@@ -311,7 +311,7 @@ function mraLink(parts, u4crc) {
   const a = $("dlmra");
   if (a.href && a.href.startsWith("blob:")) URL.revokeObjectURL(a.href);
   a.href = URL.createObjectURL(new Blob([buildMra(parts, u4crc)], { type: "application/xml" }));
-  a.download = "Akai Katana Gold.mra";
+  a.download = "Akai Katana Unlimited.mra";
 }
 document.addEventListener("DOMContentLoaded", () => mraLink(DEFAULT_PART_CRC, OUT_CRC));
 function link(id, blob, filename) {
@@ -364,7 +364,7 @@ async function handle(file) {
     } else if (crc === ORIGINAL_CRC) {
       status = "Original u4"; cls = "ok";
     } else if (crc === OUT_CRC) {
-      status = "Already Gold"; cls = "ok"; note = "This u4 already has the Gold patch. Nothing to do.";
+      status = "Already patched"; cls = "ok"; note = "This u4 already has the Unlimited patch. Nothing to do.";
     } else {
       status = "Unknown u4"; cls = "bad"; note = "This u4 doesn't match the supported version (2010/ 8/13 MASTER VER.).";
     }
@@ -391,7 +391,7 @@ async function handle(file) {
     if (entries) {
       const items = entries.map(x => x.name.toLowerCase() === "u4" ? u4Item :
         { name: x.name, method: x.method, crc: x.crc, csize: x.csize, usize: x.usize, time: x.time, date: x.date, data: x.raw });
-      link("dlzip", buildZip(items), "akatanagold.zip");
+      link("dlzip", buildZip(items), "akatanaultd.zip");
       msg("Done. Your patched files and a matching <code>.mra</code> are ready below.", "ok");
     } else {
       msg("Done. Drop the full <code>akatana.zip</code> instead if you also want the complete set.", "ok");

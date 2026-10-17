@@ -7,7 +7,7 @@ html = r'''<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Akai Katana Gold Patcher</title>
+<title>Akai Katana Unlimited Patcher</title>
 <style>
   :root {
     --bg: #fbf6f2;
@@ -109,8 +109,8 @@ html = r'''<!doctype html>
 </head>
 <body>
 <main>
-  <h1>Akai Katana <span>Gold</span> Patcher</h1>
-  <p class="lead">Patches the original Akai Katana program ROM (u4) with the Gold changes and builds a matching MiSTer <code>.mra</code>. Everything runs in your browser; your ROMs are never uploaded.</p>
+  <h1>Akai Katana <span>Unlimited</span> Patcher</h1>
+  <p class="lead">Patches the original Akai Katana program ROM (u4) with the Unlimited changes and builds a matching MiSTer <code>.mra</code>. Everything runs in your browser; your ROMs are never uploaded.</p>
 
   <section>
     <h2><b>1</b>Load your files</h2>
@@ -134,21 +134,21 @@ html = r'''<!doctype html>
     <h2><b>3</b>Download</h2>
     <div class="scroll"><table>
       <thead><tr><th>File</th><th>Expected CRC32</th><th>Built CRC32</th><th>Status</th></tr></thead>
-      <tbody><tr><td><code>u4</code> (Gold)</td><td><code>@OUTCRC@</code></td><td id="builtcrc">-</td><td id="builtst" class="wait">Waiting</td></tr></tbody>
+      <tbody><tr><td><code>u4</code> (Unlimited)</td><td><code>@OUTCRC@</code></td><td id="builtcrc">-</td><td id="builtst" class="wait">Waiting</td></tr></tbody>
     </table></div>
     <div class="btns" style="margin-top:14px">
-      <a class="btn disabled" id="dlzip" href="#">Download akatanagold.zip</a>
+      <a class="btn disabled" id="dlzip" href="#">Download akatanaultd.zip</a>
       <a class="btn alt disabled" id="dlu4zip" href="#">u4.zip</a>
       <a class="btn alt disabled" id="dlu4" href="#">raw u4</a>
-      <a class="btn alt" id="dlmra" href="#">Akai Katana Gold.mra (MiSTer)</a>
+      <a class="btn alt" id="dlmra" href="#">Akai Katana Unlimited.mra (MiSTer)</a>
     </div>
-    <p class="note"><code>akatanagold.zip</code> is the full set with <code>u4</code> replaced; <code>u2</code>, <code>u23</code> and <code>u24</code> are copied unchanged. On real hardware, keep a backup of your original u4 flash.</p>
-    <p class="note"><b>MiSTer:</b> the <code>.mra</code> is for the ikacore CV1k core. Put it with your other arcade <code>.mra</code> files and <code>akatanagold.zip</code> in your MAME ROM folder (<code>games/mame</code>). It loads <code>akatanagold.zip</code> and checks for the Gold u4 (<code>@OUTCRC@</code>). After you load a zip, the <code>.mra</code> also uses the CRC32s of the <code>u2</code>, <code>u23</code> and <code>u24</code> it found, so it always matches your set.</p>
+    <p class="note"><code>akatanaultd.zip</code> is the full set with <code>u4</code> replaced; <code>u2</code>, <code>u23</code> and <code>u24</code> are copied unchanged. On real hardware, keep a backup of your original u4 flash.</p>
+    <p class="note"><b>MiSTer:</b> the <code>.mra</code> is for the ikacore CV1k core. Put it with your other arcade <code>.mra</code> files and <code>akatanaultd.zip</code> in your MAME ROM folder (<code>games/mame</code>). It loads <code>akatanaultd.zip</code> and checks for the Unlimited u4 (<code>@OUTCRC@</code>). After you load a zip, the <code>.mra</code> also uses the CRC32s of the <code>u2</code>, <code>u23</code> and <code>u24</code> it found, so it always matches your set.</p>
   </section>
 
   <section>
-    <h2>Gold</h2>
-    <p style="margin:0">Changes (spirit form = 念身):</p>
+    <h2>Changes</h2>
+    <p style="margin:0">Spirit form = 念身.</p>
     <ul>
       <li><strong>Gold is collected automatically.</strong> Gold no longer circles the ship until spirit form ends. Each piece flies straight to the ship and is collected.</li>
       <li><strong>Each collected gold piece adds 1 HIT.</strong> HIT used to count gold as it appeared.</li>
@@ -315,7 +315,7 @@ function mraLink(parts, u4crc) {
   const a = $("dlmra");
   if (a.href && a.href.startsWith("blob:")) URL.revokeObjectURL(a.href);
   a.href = URL.createObjectURL(new Blob([buildMra(parts, u4crc)], { type: "application/xml" }));
-  a.download = "Akai Katana Gold.mra";
+  a.download = "Akai Katana Unlimited.mra";
 }
 document.addEventListener("DOMContentLoaded", () => mraLink(DEFAULT_PART_CRC, OUT_CRC));
 function link(id, blob, filename) {
@@ -368,7 +368,7 @@ async function handle(file) {
     } else if (crc === ORIGINAL_CRC) {
       status = "Original u4"; cls = "ok";
     } else if (crc === OUT_CRC) {
-      status = "Already Gold"; cls = "ok"; note = "This u4 already has the Gold patch. Nothing to do.";
+      status = "Already patched"; cls = "ok"; note = "This u4 already has the Unlimited patch. Nothing to do.";
     } else {
       status = "Unknown u4"; cls = "bad"; note = "This u4 doesn't match the supported version (2010/ 8/13 MASTER VER.).";
     }
@@ -395,7 +395,7 @@ async function handle(file) {
     if (entries) {
       const items = entries.map(x => x.name.toLowerCase() === "u4" ? u4Item :
         { name: x.name, method: x.method, crc: x.crc, csize: x.csize, usize: x.usize, time: x.time, date: x.date, data: x.raw });
-      link("dlzip", buildZip(items), "akatanagold.zip");
+      link("dlzip", buildZip(items), "akatanaultd.zip");
       msg("Done. Your patched files and a matching <code>.mra</code> are ready below.", "ok");
     } else {
       msg("Done. Drop the full <code>akatana.zip</code> instead if you also want the complete set.", "ok");
@@ -443,5 +443,5 @@ html=(html.replace('@INCRCNUM@',hex(IN)).replace('@OUTCRCNUM@',hex(OUT))
       .replace('@PATCH@',json.dumps(patch)).replace('@MRA@',json.dumps(mra)))
 open(os.path.join(HERE, '..', '..', 'index.html'),'w').write(html)
 # static MRA with the default CRCs
-open(os.path.join(HERE, '..', '..', 'mister', 'Akai Katana Gold.mra'),'w').write(mra.replace('@U4CRC@','%08x'%OUT))
+open(os.path.join(HERE, '..', '..', 'mister', 'Akai Katana Unlimited.mra'),'w').write(mra.replace('@U4CRC@','%08x'%OUT))
 print(len(html))
