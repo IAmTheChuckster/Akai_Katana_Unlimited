@@ -1,4 +1,4 @@
-# Akai Katana Unlimited
+# Akai Katana Very Limited
 
 A gameplay patch for Akai Katana (2010/ 8/13 MASTER VER.)<br>
 This repository holds only source, tools and notes. **No ROM data is included**; you patch your own dump.
