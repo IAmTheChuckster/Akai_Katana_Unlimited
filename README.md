@@ -24,8 +24,6 @@ Spirit form = 念身.
 - **Close-range medals.** A 100 medal that appears within 50 px of your hitbox (for example from an enemy you destroy up close, or bullets cancelled next to you) becomes a 1,000 medal. Boss gold is still a 10,000 medal.
 - **Gold is worth medal × HIT ÷ 10.** Each gold piece collected scores 10% of its medal value (item+0x50: 100 / 1,000 / 10,000) × the HIT count (including this piece). The value is written back into the item before it is added, so the gold score total (`0C27B670`) and the trailing popup (`0C22A320`) show the same amount. Example: a 1,000 medal at 359 HIT adds 35,900.
 
-Side effect: gold no longer ages while orbiting, so a normal gold medal is worth 100 (it used to grow to 1,000 and 10,000); only close-range and boss medals are bigger.
-
 ## Patching the game
 
 ## Testing
