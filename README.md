@@ -1,6 +1,6 @@
 # Akai Katana Unlimited
 
-A gameplay patch for Akai Katana (Cave, CV1000-D, 2010/ 8/13 MASTER VER., u4 CRC32 `613fd380`).
+A gameplay patch for Akai Katana (2010/ 8/13 MASTER VER.)<br>
 This repository holds only source, tools and notes. **No ROM data is included**; you patch your own dump.
 
 ## About this project
