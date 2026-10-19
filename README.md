@@ -32,8 +32,8 @@ It may even work on a PCB but do so on your own risk.
 
 ## Credits
 
-- [FluffyBunnyIronBalls](https://github.com/FluffyBunnyIronBalls) – project, testing
-- [Claude](https://claude.ai) (Anthropic) – reverse engineering and patcher code
+- [IAmTheChuckster](https://github.com/IAmTheChuckster)  project, testing
+- [Claude](https://claude.ai) (Anthropic)  reverse engineering and patcher code
 - Tested on the CV1k core for the MiSTer FPGA by [Raki](https://www.patreon.com/c/ikamusume/posts)
 
 ## Disclaimer
