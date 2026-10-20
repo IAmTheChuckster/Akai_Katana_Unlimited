@@ -3,6 +3,7 @@
 1. Feed Claude known limited ver youtube videos to approximate how the new bullet patters differ from base
 2. Fix the issue of energy orbs not automatically being absorbed after changing back to ship mode
 3. see about adding 360 voice DLC support.
+4. Type-C doubles the energy
 
 A gameplay patch for Akai Katana (2010/ 8/13 MASTER VER.)<br>
 This repository holds only source, tools and notes. **No ROM data is included**; you patch your own legally owned dump.
