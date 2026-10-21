@@ -1,7 +1,7 @@
 # Akai Katana Very Limited
 ## To Do
 1. make arcade mode selectable
-2. enemy bullets x 3
+2. enemy bullets may be based off of kiwami mode
 3. enemy also shoots pink bullets while in spirit mode, not just death
 4. don't loose energy after death
 5. Fix the issue of energy orbs not automatically being absorbed after changing back to ship mode
