@@ -1,11 +1,12 @@
 # Akai Katana Very Limited
 ## To Do
-1. enemy bullets x 3
-2. enemy also shoots pink bullets while in spirit mode, not just death
-3. don't loose energy after death
-4. Fix the issue of energy orbs not automatically being absorbed after changing back to ship mode
-5. see about adding 360 voice DLC support.
-6. Type-C doubles the energy
+1. make arcade mode selectable
+2. enemy bullets x 3
+3. enemy also shoots pink bullets while in spirit mode, not just death
+4. don't loose energy after death
+5. Fix the issue of energy orbs not automatically being absorbed after changing back to ship mode
+6. see about adding 360 voice DLC support.
+7. Type-C doubles the energy
 
 A gameplay patch for Akai Katana (2010/ 8/13 MASTER VER.)<br>
 This repository holds only source, tools and notes. **No ROM data is included**; you patch your own legally owned dump.
