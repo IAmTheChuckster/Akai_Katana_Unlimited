@@ -7,9 +7,13 @@
 ! game starts; the original values are listed next to each table (0x360, 0x640).
         .equ MV,   0x0C7FF000    ! menu vars: +0 cursor (0 = ARCADE MODE, 1 = UNLIMITED), +4 last input, +8 mode in use
         .equ SW_WN, 12
-        .equ SW_LN, 7
+        .equ SW_LN, 8
         .equ PM_WN, 3
         .equ PM_LN, 5
+        .equ RQ,   0x0C7F2000    ! volley replay queue: RQ_N entries of [timer, 148-byte emitter]
+        .equ RQ_N, 32
+        .equ RQ_SZ, 152
+        .equ RQ_DELAY, 20
 hook:
         mov.l   L_pwt,r1         ! permanent word patches
         mov     #PM_WN,r3
@@ -348,6 +352,7 @@ L_scene:    .long 0x0C1FD750
         .long 0xAC227F50, 0xA03F0280   ! energy item init: main routine 0x0C228A60 -> our wrapper (energy only)
         .long 0xAC1FFBB4, 0xA03F0F00   ! bullet create (0x0C2000D0), n-way emitter call -> tripler
         .long 0xAC1FFCD4, 0xA03F0F00   ! bullet create, single emitter call -> tripler
+        .long 0xAC1FF38C, 0xA03F1000   ! shot emitter processor (0x0C1FF930) -> replay queue first
 
 ! ---- original values for the switchable long patches above (same order; ARCADE MODE)
         .org 0x640
@@ -358,6 +363,7 @@ L_scene:    .long 0x0C1FD750
         .long 0x0C228A60
         .long 0x0C2000D0
         .long 0x0C2000D0
+        .long 0x0C1FF930
 
 ! ---- permanent long patches (address, value), always installed at boot
         .org 0x680
@@ -522,6 +528,14 @@ L_s1b:   .long  0xA03F0E30
 ! the original values back. Writes go through cached P1 addresses (0x8C...) so the CPU sees new code.
         .org 0xE80
 apply:
+        mov.l   L_rq0,r1         ! empty the volley replay queue
+        mov     #RQ_N,r3
+        mov.w   L_rqsz0,r2
+        mov     #0,r0
+84:     mov.l   r0,@r1
+        dt      r3
+        bf/s    84b
+        add     r2,r1
         mov.l   L_mv3,r6
         mov.l   @r6,r7           ! cursor
         mov.l   r7,@(8,r6)       ! mode in use
@@ -556,6 +570,9 @@ apply:
         nop
         .align 2
 L_mv3:  .long   MV
+L_rq0:  .long   RQ
+L_rqsz0: .word  RQ_SZ
+        .align 2
 L_p1m:  .long   0xDFFFFFFF
 L_swt2: .long   0xA03F0300
 L_slt2: .long   0xA03F0600
@@ -647,3 +664,115 @@ dupc:
         nop
         .align 2
 L_bcr:  .long   0x0C2000D0
+
+! ---- enemies fire 1.5x as often (UNLIMITED). Enemy volleys are shot emitters: 148-byte records in a
+! pool (base = @0x0C4C65AC, records at base+0x5CC80, count at base+0x6ED90) that the processor
+! 0x0C1FF930 fires once and clears every frame. This runs just before the processor: every other new
+! enemy emitter (state 1, type not 0x4A revenge) is copied into a replay queue, and copies whose
+! RQ_DELAY frames are up are put back into the pool, so half of all volleys fire a second time.
+! r4 = pool base (passed on to the processor).
+        .org 0x1000
+replay:
+        sts.l   pr,@-r15
+        mov.l   r8,@-r15
+        mov.l   r9,@-r15
+        mov.l   r10,@-r15
+        mov.l   r11,@-r15
+        mov.l   r4,@-r15
+        mov.l   L_rcnt,r0
+        mov.l   @(r0,r4),r10     ! emitters this frame
+        mov.l   L_rpool,r8
+        add     r4,r8            ! first record
+        mov     #0,r9            ! index
+100:    cmp/ge  r10,r9
+        bt      110f
+        mov.l   @r8,r0
+        cmp/eq  #1,r0
+        bf      108f             ! not a new emitter
+        mov.l   @(4,r8),r0
+        cmp/eq  #0x4A,r0
+        bt      108f             ! revenge volley: never replayed
+        mov.l   L_rtog,r1
+        mov.l   @r1,r0
+        xor     #1,r0
+        mov.l   r0,@r1
+        tst     r0,r0
+        bt      108f             ! every other volley only
+        mov.l   L_rq,r1          ! find a free queue entry
+        mov     #RQ_N,r3
+        mov.w   L_rqsz,r2
+102:    mov.l   @r1,r0
+        tst     r0,r0
+        bt      103f
+        dt      r3
+        bf/s    102b
+        add     r2,r1
+        bra     108f             ! queue full: skip
+        nop
+103:    mov     #RQ_DELAY,r0
+        mov.l   r0,@r1
+        add     #4,r1
+        mov     r8,r2
+        mov     #37,r3           ! copy 148 bytes
+104:    mov.l   @r2+,r0
+        mov.l   r0,@r1
+        dt      r3
+        bf/s    104b
+        add     #4,r1
+108:    mov.w   L_rsz,r0
+        add     r0,r8
+        bra     100b
+        add     #1,r9
+110:    mov.l   L_rq,r11         ! count down; put due volleys back into the pool
+        mov     #RQ_N,r9
+111:    mov.l   @r11,r0
+        tst     r0,r0
+        bt      118f
+        dt      r0
+        bf/s    118f
+        mov.l   r0,@r11
+        mov.l   @r15,r4          ! pool base
+        mov.l   L_rcnt,r0
+        mov.l   @(r0,r4),r10
+        mov.w   L_rmax,r1
+        cmp/ge  r1,r10
+        bt      118f             ! pool full: drop it
+        mov     r10,r2
+        add     #1,r2
+        mov.l   r2,@(r0,r4)      ! count + 1
+        mov.w   L_rsz,r1
+        mul.l   r1,r10
+        sts     macl,r1
+        mov.l   L_rpool,r2
+        add     r4,r2
+        add     r2,r1            ! new record
+        mov     r11,r2
+        add     #4,r2
+        mov     #37,r3
+112:    mov.l   @r2+,r0
+        mov.l   r0,@r1
+        dt      r3
+        bf/s    112b
+        add     #4,r1
+118:    mov.w   L_rqsz,r0
+        dt      r9
+        bf/s    111b
+        add     r0,r11
+        mov.l   @r15+,r4
+        mov.l   @r15+,r11
+        mov.l   @r15+,r10
+        mov.l   @r15+,r9
+        mov.l   @r15+,r8
+        lds.l   @r15+,pr
+        mov.l   L_rproc,r0
+        jmp     @r0
+        nop
+L_rsz:  .word   148
+L_rmax: .word   499
+L_rqsz: .word   RQ_SZ
+        .align 2
+L_rcnt:  .long  0x0006ED90
+L_rpool: .long  0x0005CC80
+L_rq:    .long  RQ
+L_rtog:  .long  MV+12
+L_rproc: .long  0x0C1FF930

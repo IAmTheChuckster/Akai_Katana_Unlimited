@@ -18,6 +18,11 @@ I did all the testing and planning.
 
 ## Change Notes
 
+### Kiwami branch (work in progress, u4 CRC32 `52767ef7`)
+- **Enemy bullets come in threes (UNLIMITED).** Every normal enemy bullet is followed by two copies on the same path, 5 and 10 frames behind, so each shot becomes a trailing line of three. Revenge bullets stay single. (Wrapper on the bullet-create calls at `0C1FFBB4`/`0C1FFCD4`.)
+- **Enemies fire 1.5x as often (UNLIMITED).** Every other enemy volley is fired a second time 20 frames later, from the same spot with the same pattern. (Replay queue in front of the shot-emitter processor, pointer at `0C1FF38C`; queue in RAM at `0C7F2000`.)
+- ARCADE MODE is unchanged.
+
 ### 2026/10/22 (u4 CRC32 `7f51bcd6`)
 - New mode menu: after a coin is inserted, the title screen shows **ARCADE MODE** and **UNLIMITED** in place of the rank and high-score lines. Move the arrow with up/down and press start. ARCADE MODE plays the original, unmodified game; UNLIMITED plays with all the changes below. The choice is remembered until power-off (default ARCADE MODE).
 - Removed the revenge bullets that were fired together with enemies' normal shots in ship mode. Revenge bullets are back to the original: destroyed enemies fire them in spirit form only.
