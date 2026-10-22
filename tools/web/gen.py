@@ -147,20 +147,6 @@ html = r'''<!doctype html>
   </section>
 
   <section>
-    <h2>Changes</h2>
-    <p style="margin:0">Spirit form = 念身.</p>
-    <ul>
-      <li><strong>New warning screen.</strong> The boot warning shows an unofficial-project notice, and the version line reads 2026/10/22 VERY LIMITED.</li>
-      <li><strong>Gold is collected automatically.</strong> Gold no longer circles the ship until spirit form ends. Each piece flies straight to the ship and is collected.</li>
-      <li><strong>Each collected gold piece adds 1 HIT.</strong> HIT used to count gold as it appeared.</li>
-      <li><strong>HIT resets each stage.</strong> It no longer clears about 3 seconds after the last hit; it keeps counting through the stage and starts again from 0 at the next stage. The HIT number is still only shown while it's counting up.</li>
-      <li>Because gold is collected straight away, it doesn't grow in value while it circles: a normal medal is worth 100.</li>
-      <li><strong>Close-range medals.</strong> A 100 medal that appears within 50 px of you (an enemy destroyed up close, bullets cancelled next to you) becomes a 1,000 medal. Boss gold is still a 10,000 medal.</li>
-      <li><strong>Gold is worth medal × HIT ÷ 10.</strong> Each piece collected adds 10% of its medal value (100 / 1,000 / 10,000) × your HIT count, counting itself. The gold score total and the trailing popup show that same amount (e.g. a 1,000 medal at 359 HIT adds 35,900).</li>
-      <li><strong>Leaving spirit form early is free.</strong> Pressing the spirit button again used to cost 1,600 energy; now you keep what you have left.</li>
-      <li><strong>Bullets slow down near the orb.</strong> Enemy bullets within 24 px of the orb move at half speed and return to full speed as soon as they leave. This works for every character, in ship and spirit form.</li>
-      <li><strong>Energy balls follow you into spirit form.</strong> Energy balls circling the orb no longer get collected when you switch to spirit form. They circle you instead, the way gold used to, and are collected automatically when spirit form ends. They don't expire while you're in spirit form.</li>
-    </ul>
     <p class="note">Source and details: <a href="https://github.com/IAmTheChuckster/Akai_Katana_Very_Limited">github.com/IAmTheChuckster/Akai_Katana_Very_Limited</a></p>
   </section>
 
