@@ -4,10 +4,10 @@
 ! ---- boot hook: called instead of 0x0C1DE164 (after the program is unpacked into RAM).
 ! Installs the permanent patches (title-screen mode menu, game-start hook, boot-screen text). The
 ! UNLIMITED patches are written (or the original values put back, for ARCADE MODE) by "apply" when a
-! game starts; the original values are listed next to each table (0x360, 0x628).
+! game starts; the original values are listed next to each table (0x360, 0x640).
         .equ MV,   0x0C7FF000    ! menu vars: +0 cursor (0 = ARCADE MODE, 1 = UNLIMITED), +4 last input, +8 mode in use
         .equ SW_WN, 12
-        .equ SW_LN, 5
+        .equ SW_LN, 7
         .equ PM_WN, 3
         .equ PM_LN, 5
 hook:
@@ -346,14 +346,18 @@ L_scene:    .long 0x0C1FD750
         .long 0xAC226F14, 0xA03F0400   ! SpawnItem: per-kind setup call -> wrapper (100 medal near the player -> 1,000)
         .long 0xAC1FF3DC, 0xA03F0200   ! bullet manager: literal for the jsr above (was add #-1,r1 / mov.l r1,@(r0,r8))
         .long 0xAC227F50, 0xA03F0280   ! energy item init: main routine 0x0C228A60 -> our wrapper (energy only)
+        .long 0xAC1FFBB4, 0xA03F0F00   ! bullet create (0x0C2000D0), n-way emitter call -> tripler
+        .long 0xAC1FFCD4, 0xA03F0F00   ! bullet create, single emitter call -> tripler
 
 ! ---- original values for the switchable long patches above (same order; ARCADE MODE)
-        .org 0x628
+        .org 0x640
         .long 0x0C1F8B20
         .long 0x0C1E4190
         .long 0x0C228960
         .long 0x71FF0816
         .long 0x0C228A60
+        .long 0x0C2000D0
+        .long 0x0C2000D0
 
 ! ---- permanent long patches (address, value), always installed at boot
         .org 0x680
@@ -556,4 +560,90 @@ L_p1m:  .long   0xDFFFFFFF
 L_swt2: .long   0xA03F0300
 L_slt2: .long   0xA03F0600
 L_sow2: .long   0xA03F0360
-L_sol2: .long   0xA03F0628
+L_sol2: .long   0xA03F0640
+
+! ---- enemy bullets come in threes (UNLIMITED). Every enemy bullet is made by 0x0C2000D0(r4 type,
+! r5 x, r6 y, r7, 7 stack args), which returns the bullet (velocity already set at +0x38/+0x3C).
+! This wrapper makes the bullet, then two more with the same arguments, moved back along the first
+! one's path by GAP and 2 x GAP frames of travel, so each shot becomes a line of three.
+! Revenge bullets (type 0x4A) are left single. Returns the first bullet.
+! Frame: [0..27] stack args for our calls, [28] first bullet, [32] copy number,
+!        [36..48] r4-r7, [52] pr, [56..] caller's stack args.
+        .equ GAP, 5
+        .org 0xF00
+dupc:
+        sts.l   pr,@-r15
+        mov.l   r7,@-r15
+        mov.l   r6,@-r15
+        mov.l   r5,@-r15
+        mov.l   r4,@-r15
+        add     #-36,r15
+        bsr     95f
+        nop
+        mov.l   L_bcr,r0
+        jsr     @r0
+        nop
+        mov.l   r0,@(28,r15)
+        tst     r0,r0
+        bt      93f              ! no bullet (pool full)
+        mov.l   @(36,r15),r0
+        cmp/eq  #0x4A,r0
+        bt      93f              ! revenge bullet: single
+        mov     #1,r1
+        mov.l   r1,@(32,r15)
+91:     bsr     95f
+        nop
+        mov.l   @(36,r15),r4
+        mov.l   @(40,r15),r5
+        mov.l   @(44,r15),r6
+        mov.l   @(48,r15),r7
+        mov.l   L_bcr,r0
+        jsr     @r0
+        nop
+        tst     r0,r0
+        bt      92f
+        mov.l   @(28,r15),r1     ! first bullet
+        mov.l   @(32,r15),r3
+        mov     #GAP,r2
+        mul.l   r2,r3
+        sts     macl,r3          ! frames back = copy x GAP
+        mov.l   @(56,r1),r2      ! vx
+        mul.l   r3,r2
+        sts     macl,r2
+        mov.l   @(48,r1),r4
+        sub     r2,r4
+        mov.l   r4,@(48,r0)      ! x = x1 - vx * frames
+        mov.l   @(60,r1),r2      ! vy
+        mul.l   r3,r2
+        sts     macl,r2
+        mov.l   @(52,r1),r4
+        sub     r2,r4
+        mov.l   r4,@(52,r0)      ! y = y1 - vy * frames
+92:     mov.l   @(32,r15),r1
+        add     #1,r1
+        mov.l   r1,@(32,r15)
+        mov     #3,r2
+        cmp/ge  r2,r1
+        bf      91b
+93:     mov.l   @(28,r15),r0
+        add     #36,r15
+        mov.l   @r15+,r4
+        mov.l   @r15+,r5
+        mov.l   @r15+,r6
+        mov.l   @r15+,r7
+        lds.l   @r15+,pr
+        rts
+        nop
+95:     mov     r15,r1           ! copy the caller's 7 stack args (r15+56) to r15 (r0-r3 only)
+        add     #56,r1
+        mov     r15,r2
+        mov     #7,r3
+96:     mov.l   @r1+,r0
+        mov.l   r0,@r2
+        dt      r3
+        bf/s    96b
+        add     #4,r2
+        rts
+        nop
+        .align 2
+L_bcr:  .long   0x0C2000D0
