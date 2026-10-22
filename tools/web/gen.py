@@ -150,6 +150,7 @@ html = r'''<!doctype html>
     <h2>Changes</h2>
     <p style="margin:0">Spirit form = 念身.</p>
     <ul>
+      <li><strong>New warning screen.</strong> The boot warning shows an unofficial-project notice, and the version line reads 2026/10/22 VERY LIMITED.</li>
       <li><strong>Gold is collected automatically.</strong> Gold no longer circles the ship until spirit form ends. Each piece flies straight to the ship and is collected.</li>
       <li><strong>Each collected gold piece adds 1 HIT.</strong> HIT used to count gold as it appeared.</li>
       <li><strong>HIT resets each stage.</strong> It no longer clears about 3 seconds after the last hit; it keeps counting through the stage and starts again from 0 at the next stage. The HIT number is still only shown while it's counting up.</li>

@@ -17,6 +17,14 @@ hook:
         dt      r3
         bf/s    2b
         mov.l   r4,@r2
+        mov.l   L_bdst,r1        ! warning-screen text (0x0C3042D4..0x0C3045F3) from 0xA03F0700
+        mov.l   L_bsrc,r2
+        mov.w   L_blen,r3
+3:      mov.b   @r2+,r0
+        mov.b   r0,@r1
+        dt      r3
+        bf/s    3b
+        add     #1,r1
         mov.l   L_orig,r0        ! continue with the original call (pr still returns to boot)
         jmp     @r0
         nop
@@ -26,6 +34,10 @@ L_wcnt: .long   12
 L_ltbl: .long   0xA03F0600
 L_lcnt: .long   6
 L_orig: .long   0x0C1DE164
+L_bdst: .long   0xAC3042D4
+L_bsrc: .long   0xA03F0700
+L_blen: .word   0x320
+        .align 2
 
 ! ---- orbit-entry state chooser (called instead of random(r4) at 0x0C229896; r13 = item)
 ! returns r0 = random(r4) as before, and r2 = new state:
@@ -291,3 +303,7 @@ L_scene:    .long 0x0C1FD750
         .long 0xAC1F0F0C, 0xA03F04E0   ! scene change (game start / next stage): 0x0C1FD750 -> wrapper that clears HIT first
         .long 0xAC1FF3DC, 0xA03F0200   ! bullet manager: literal for the jsr above (was add #-1,r1 / mov.l r1,@(r0,r8))
         .long 0xAC227F50, 0xA03F0280   ! energy item init: main routine 0x0C228A60 -> our wrapper (energy only)
+
+! ---- warning screen text and version line (copied by the boot hook; see tools/warntext.py)
+        .org 0x700
+        .include "src/warntext.s"

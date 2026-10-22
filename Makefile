@@ -4,7 +4,7 @@ U4?=u4.orig
 
 all: build/u4
 
-build/goldpatch.bin: src/goldpatch.s
+build/goldpatch.bin: src/goldpatch.s src/warntext.s
 	mkdir -p build
 	$(AS) --big -o build/goldpatch.o $<
 	$(OBJCOPY) -O binary build/goldpatch.o $@
