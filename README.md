@@ -4,7 +4,7 @@
 2. enemy bullets may be based off of kiwami mode
 3. enemy also shoots pink bullets while in spirit mode, not just death
 4. don't loose energy after death
-5. Fix the issue of energy orbs not automatically being absorbed after changing back to ship mode
+5. ~~Fix the issue of energy orbs not automatically being absorbed after changing back to ship mode~~
 6. see about adding 360 voice DLC support.
 7. Type-C doubles the energy
 
