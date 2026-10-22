@@ -3,13 +3,13 @@
         .org 0
 ! ---- boot hook: called instead of 0x0C1DE164 (after the program is unpacked into RAM).
 ! Installs the permanent patches (title-screen mode menu, game-start hook, boot-screen text). The
-! LIMITED+ patches are written (or the original values put back, for ARCADE MODE) by "apply" when a
+! UNLIMITED patches are written (or the original values put back, for ARCADE MODE) by "apply" when a
 ! game starts; the original values are listed next to each table (0x360, 0x628).
-        .equ MV,   0x0C7FF000    ! menu vars: +0 cursor (0 = ARCADE MODE, 1 = LIMITED+), +4 last input, +8 mode in use
+        .equ MV,   0x0C7FF000    ! menu vars: +0 cursor (0 = ARCADE MODE, 1 = UNLIMITED), +4 last input, +8 mode in use
         .equ SW_WN, 12
         .equ SW_LN, 5
         .equ PM_WN, 3
-        .equ PM_LN, 4
+        .equ PM_LN, 5
 hook:
         mov.l   L_pwt,r1         ! permanent word patches
         mov     #PM_WN,r3
@@ -194,7 +194,7 @@ L_e110: .word   0x110
 L_pst:  .long   0x0C7E8660
 L_imain: .long  0x0C228A60
 
-! ---- switchable word patches (address, LIMITED+ value); originals saved at boot
+! ---- switchable word patches (address, UNLIMITED value); originals saved at boot
         .org 0x300
         .long 0xAC22989C, 0x6423   ! orbit entry: mov r2,r4  (state chosen by our routine: 4 = release, 2 = orbit)
         .long 0xAC2298A0, 0x6623   ! orbit entry: mov r2,r6  (dispatch the same state this frame)
@@ -308,7 +308,7 @@ L_div10:    .long 0xCCCCCCCD
 
 ! ---- game start / next stage. The scene-change routine at 0x0C1F0E10 calls 0x0C1FD750 through the
 ! pointer at 0x0C1F0F0C (permanent patch). At game start (r4 = 0x15) the chosen mode is applied. In
-! LIMITED+ the HIT count (0x0CB363F8) is cleared at every scene change (game start, next stage).
+! UNLIMITED the HIT count (0x0CB363F8) is cleared at every scene change (game start, next stage).
         .org 0x4E0
 stgclr:
         mov     r4,r0
@@ -339,7 +339,7 @@ L_mv1:      .long MV
 L_hitcnt2:  .long 0x0CB363F8
 L_scene:    .long 0x0C1FD750
 
-! ---- switchable long patches (address, LIMITED+ value); originals saved at boot
+! ---- switchable long patches (address, UNLIMITED value); originals saved at boot
         .org 0x600
         .long 0xAC22A104, 0xA03F0480   ! item collect: AddScore -> our wrapper
         .long 0xAC2299D8, 0xA03F0140   ! orbit entry: random() call -> our state chooser
@@ -360,6 +360,7 @@ L_scene:    .long 0x0C1FD750
         .long 0xAC1F0F0C, 0xA03F04E0   ! scene change (game start / next stage): 0x0C1FD750 -> stgclr
         .long 0xAC304158, 0x32362E31   ! memory-check screen date: "      2010. 8.13" -> "      2026.10.22"
         .long 0xAC30415C, 0x302E3232   !   (second half)
+        .long 0xAC21F734, 0xA03F0E40   ! memory-check screen title: "AKAI KATANA" -> "AKAI KATANA UNLIMITED"
         .long 0xAC2220E8, 0xA03F0C00   ! title: literal for the menu jump below (was 0x00806020, only used at 0x0C221F34)
 ! ---- permanent word patches
         .org 0x6C0
@@ -373,7 +374,7 @@ L_scene:    .long 0x0C1FD750
 
 ! ---- title-screen mode menu. Jumped to from the start of the title's rank/score block (0x0C221F30).
 ! No credits: run the original block (set r10/r8/r4 as the replaced instructions did, continue at
-! 0x0C221F36). With credits: draw ARCADE MODE / LIMITED+ in the block's place (same font 0xF0, same
+! 0x0C221F36). With credits: draw ARCADE MODE / UNLIMITED in the block's place (same font 0xF0, same
 ! outline as the rank line), move the cursor with up/down, and continue at 0x0C2220C8 (end of the block).
         .equ MX,  108
         .equ MY0, 124
@@ -407,7 +408,7 @@ menu:
         tst     #2,r0
         bt      72f
         mov     #1,r1
-        mov.l   r1,@r9           ! down: LIMITED+
+        mov.l   r1,@r9           ! down: UNLIMITED
 72:     mov.l   @r9,r0
         mov     #0,r12
         tst     r0,r0
@@ -418,7 +419,7 @@ menu:
         mov.l   L_s0b,r10
 73:     bsr     item
         mov     #MY0,r11
-        mov.l   @r9,r12          ! r12 = 1 if LIMITED+ selected
+        mov.l   @r9,r12          ! r12 = 1 if UNLIMITED selected
         mov.l   L_s1a,r10
         tst     r12,r12
         bt      74f
@@ -507,11 +508,13 @@ L_s1b:   .long  0xA03F0E30
         .org 0xE10
         .asciz  "> ARCADE MODE"
         .org 0xE20
-        .asciz  "  LIMITED+"
+        .asciz  "  UNLIMITED"
         .org 0xE30
-        .asciz  "> LIMITED+"
+        .asciz  "> UNLIMITED"
+        .org 0xE40
+        .asciz  "AKAI KATANA UNLIMITED"
 
-! ---- apply the chosen mode at game start: LIMITED+ writes the switchable patches, ARCADE MODE puts
+! ---- apply the chosen mode at game start: UNLIMITED writes the switchable patches, ARCADE MODE puts
 ! the original values back. Writes go through cached P1 addresses (0x8C...) so the CPU sees new code.
         .org 0xE80
 apply:
