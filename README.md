@@ -1,6 +1,6 @@
 # Akai Katana Very Limited
 ## To Do
-1. make arcade mode selectable
+1. ~~make arcade mode selectable~~
 2. enemy bullets may be based off of kiwami mode
 3. enemy also shoots pink bullets while in spirit mode, not just death
 4. don't loose energy after death
@@ -18,7 +18,8 @@ I did all the testing and planning.
 
 ## Change Notes
 
-### 2026/10/22 (u4 CRC32 `684c6f41`)
+### 2026/10/22 (u4 CRC32 `a25e5224`)
+- New mode menu: after a coin is inserted, the title screen shows **ARCADE MODE** and **LIMITED+** in place of the rank and high-score lines. Move the arrow with up/down and press start. ARCADE MODE plays the original, unmodified game; LIMITED+ plays with all the changes below. The choice is remembered until power-off (default ARCADE MODE).
 - Removed the revenge bullets that were fired together with enemies' normal shots in ship mode. Revenge bullets are back to the original: destroyed enemies fire them in spirit form only.
 - Energy balls that circle you in spirit form are now collected automatically when you go back to ship mode, instead of returning to the orb.
 - New warning screen: an unofficial-project notice and "HAVE FUN!!!" (Japan and export versions).
@@ -26,6 +27,8 @@ I did all the testing and planning.
 - Web patcher: renamed to Akai Katana Unlimited (outputs `akatanaultd.zip` and `Akai Katana Unlimited.mra`), the Changes section was removed, and the source link points to this repository.
 
 ### Current features
+
+- **Mode select.** ARCADE MODE / LIMITED+ menu on the title screen once a coin is in (permanent hook at `0C221F30`; the mode is applied at game start through the scene-change hook, writing either the LIMITED+ values or the original values listed in `src/goldpatch.s`). Everything else in this list applies in LIMITED+ only, except the boot screens.
 
 Spirit form = 念身.
 
