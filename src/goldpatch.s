@@ -32,7 +32,7 @@ hook:
 L_wtbl: .long   0xA03F0300
 L_wcnt: .long   12
 L_ltbl: .long   0xA03F0600
-L_lcnt: .long   6
+L_lcnt: .long   8
 L_orig: .long   0x0C1DE164
 L_bdst: .long   0xAC3042D4
 L_bsrc: .long   0xA03F0700
@@ -302,6 +302,8 @@ L_scene:    .long 0x0C1FD750
         .long 0xAC226F14, 0xA03F0400   ! SpawnItem: per-kind setup call -> wrapper (100 medal near the player -> 1,000)
         .long 0xAC1F0F0C, 0xA03F04E0   ! scene change (game start / next stage): 0x0C1FD750 -> wrapper that clears HIT first
         .long 0xAC1FF3DC, 0xA03F0200   ! bullet manager: literal for the jsr above (was add #-1,r1 / mov.l r1,@(r0,r8))
+        .long 0xAC304158, 0x32362E31   ! memory-check screen date: "      2010. 8.13" -> "      2026.10.22"
+        .long 0xAC30415C, 0x302E3232   !   (second half)
         .long 0xAC227F50, 0xA03F0280   ! energy item init: main routine 0x0C228A60 -> our wrapper (energy only)
 
 ! ---- warning screen text and version line (copied by the boot hook; see tools/warntext.py)
