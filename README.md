@@ -1,12 +1,12 @@
 # Akai Katana Unlimited
 ## To Do
-1. ~~make arcade mode selectable~~
-2. enemy bullets may be based off of kiwami mode
-3. enemy also shoots pink bullets while in spirit mode, not just death
+1.
+2. 
+3. 
 4. don't loose energy after death
-5. ~~Fix the issue of energy orbs not automatically being absorbed after changing back to ship mode~~
+5. 
 6. see about adding 360 voice DLC support.
-7. Type-C doubles the energy
+7. 
 
 A gameplay patch for Akai Katana (2010/ 8/13 MASTER VER.)<br>
 This repository holds only source, tools and notes. **No ROM data is included**; you patch your own legally owned dump.
