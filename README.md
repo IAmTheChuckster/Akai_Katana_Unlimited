@@ -1,4 +1,4 @@
-# Akai Katana Very Limited
+# Akai Katana Unlimited
 ## To Do
 1. ~~make arcade mode selectable~~
 2. enemy bullets may be based off of kiwami mode
