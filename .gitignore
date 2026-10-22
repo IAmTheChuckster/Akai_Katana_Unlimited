@@ -1,0 +1,10 @@
+# never commit ROM data
+build/
+*.zip
+u2
+u4
+u4.*
+u23
+u24
+*.sta
+*.nv
