@@ -147,7 +147,7 @@ html = r'''<!doctype html>
   </section>
 
   <section>
-    <p class="note">Source and details: <a href="https://github.com/IAmTheChuckster/Akai_Katana_Very_Limited">github.com/IAmTheChuckster/Akai_Katana_Very_Limited</a></p>
+    <p class="note">Source and details: <a href="https://github.com/IAmTheChuckster/Akai_Katana_Unlimited">github.com/IAmTheChuckster/Akai_Katana_Unlimited</a></p>
   </section>
 
   <footer>Not affiliated with or endorsed by Cave or exA-Arcadia. You must supply your own legally obtained ROM dump.</footer>
