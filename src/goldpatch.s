@@ -4,10 +4,10 @@
 ! ---- boot hook: called instead of 0x0C1DE164 (after the program is unpacked into RAM).
 ! Installs the permanent patches (title-screen mode menu, game-start hook, boot-screen text). The
 ! UNLIMITED patches are written (or the original values put back, for ARCADE MODE) by "apply" when a
-! game starts; the original values are listed next to each table (0x360, 0x640).
+! game starts; the original values are listed next to each table (0x360, 0x680).
         .equ MV,   0x0C7FF000    ! menu vars: +0 cursor (0 = ARCADE MODE, 1 = UNLIMITED), +4 last input, +8 mode in use
         .equ SW_WN, 12
-        .equ SW_LN, 8
+        .equ SW_LN, 9
         .equ PM_WN, 5
         .equ PM_LN, 11
         .equ BUSY, 900           ! no tripling/replay above this many live enemy bullets
@@ -354,9 +354,10 @@ L_scene:    .long 0x0C1FD750
         .long 0xAC1FFBB4, 0xA03F0F00   ! bullet create (0x0C2000D0), n-way emitter call -> tripler
         .long 0xAC1FFCD4, 0xA03F0F00   ! bullet create, single emitter call -> tripler
         .long 0xAC1FF38C, 0xA03F1100   ! shot emitter processor (0x0C1FF930) -> replay queue first
+        .long 0xAC22A2E4, 0xA03F1200   ! item collect: AddEnergy (0x0C1F9470) -> Shion double energy
 
 ! ---- original values for the switchable long patches above (same order; ARCADE MODE)
-        .org 0x640
+        .org 0x680
         .long 0x0C1F8B20
         .long 0x0C1E4190
         .long 0x0C228960
@@ -365,6 +366,7 @@ L_scene:    .long 0x0C1FD750
         .long 0x0C2000D0
         .long 0x0C2000D0
         .long 0x0C1FF930
+        .long 0x0C1F9470
 
 ! ---- permanent long patches (address, value), always installed at boot
 ! ---- permanent word patches
@@ -574,7 +576,7 @@ L_p1m:  .long   0xDFFFFFFF
 L_swt2: .long   0xA03F0300
 L_slt2: .long   0xA03F0600
 L_sow2: .long   0xA03F0360
-L_sol2: .long   0xA03F0640
+L_sol2: .long   0xA03F0680
 
 ! ---- enemy bullets come in threes (UNLIMITED). Every enemy bullet is made by 0x0C2000D0(r4 type,
 ! r5 x, r6 y, r7, 7 stack args), which returns the bullet (velocity already set at +0x38/+0x3C).
@@ -807,3 +809,19 @@ L_rq:    .long  RQ
 L_rtog:  .long  MV+12
 L_rproc: .long  0x0C1FF930
 L_rhot:  .long  hot+0xA03F0000
+
+! ---- Shion's pen collects energy twice as fast (UNLIMITED): energy balls caught by the pen pay
+! double when collected. Wraps the AddEnergy call in the item collect routine (literal 0x0C22A2E4).
+! r4 = player handle, r5 = energy amount.
+        .org 0x1200
+eshion: mov.l   L_pilot,r0
+        mov.l   @r0,r0
+        cmp/eq  #2,r0            ! P1 pilot: 0 Tsubaki, 1 Botan, 2 Shion
+        bf      1f
+        shll    r5
+1:      mov.l   L_adde,r0
+        jmp     @r0
+        nop
+        .align 2
+L_pilot: .long  0x0C7E8658
+L_adde:  .long  0x0C1F9470
