@@ -9,7 +9,7 @@ MSG = ("This project is unofficial and is not affiliated with, endorsed by, or a
        "All rights to the original game and its associated intellectual property remain with their "
        "respective rights holders.")
 FUN = "HAVE FUN!!!"
-DATE = "2026/10/22 VERY LIMITED"
+DATE = "2026/10/22 UNLIMITED"
 BASE = 0x3042D4
 # original layout: (offset, length) of each string, read from the 2010/8/13 program
 JP = [(0x3042d4+i*0x2c,40) for i in range(8)]
@@ -27,7 +27,7 @@ def block(slots, indent, width):
         out.append((off, s))
     return out
 strs = block(JP, 2, 36) + block(EX, 3, 25)
-d = ' ' * (DT[1] - len(DATE)) ; ds = (d[:5] + DATE).ljust(DT[1]); strs.append((DT[0], ds))
+d = ' ' * (DT[1] - len(DATE)) ; ds = (d[:7] + DATE).ljust(DT[1]); strs.append((DT[0], ds))
 mem = bytearray(END - BASE)
 for off, s in strs:
     mem[off - BASE:off - BASE + len(s)] = s.encode('ascii')
