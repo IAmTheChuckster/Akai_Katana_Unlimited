@@ -8,7 +8,7 @@ import textwrap, os
 MSG = ("This project is unofficial and is not affiliated with, endorsed by, or authorized by CAVE. "
        "All rights to the original game and its associated intellectual property remain with their "
        "respective rights holders.")
-FUN = "Have fun!!!"
+FUN = "HAVE FUN!!!"
 DATE = "2026/10/22 VERY LIMITED"
 BASE = 0x3042D4
 # original layout: (offset, length) of each string, read from the 2010/8/13 program
