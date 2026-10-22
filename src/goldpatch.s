@@ -8,8 +8,9 @@
         .equ MV,   0x0C7FF000    ! menu vars: +0 cursor (0 = ARCADE MODE, 1 = UNLIMITED), +4 last input, +8 mode in use
         .equ SW_WN, 12
         .equ SW_LN, 8
-        .equ PM_WN, 3
-        .equ PM_LN, 5
+        .equ PM_WN, 5
+        .equ PM_LN, 11
+        .equ BUSY, 900           ! no tripling/replay above this many live enemy bullets
         .equ RQ,   0x0C7F2000    ! volley replay queue: RQ_N entries of [timer, 148-byte emitter]
         .equ RQ_N, 32
         .equ RQ_SZ, 152
@@ -48,7 +49,7 @@ hook:
 L_blen: .word   0x320
         .align 2
 L_pwt:  .long   0xA03F06C0
-L_plt:  .long   0xA03F0680
+L_plt:  .long   0xA03F1000
 L_mv0:  .long   MV
 L_orig: .long   0x0C1DE164
 L_bdst: .long   0xAC3042D4
@@ -352,7 +353,7 @@ L_scene:    .long 0x0C1FD750
         .long 0xAC227F50, 0xA03F0280   ! energy item init: main routine 0x0C228A60 -> our wrapper (energy only)
         .long 0xAC1FFBB4, 0xA03F0F00   ! bullet create (0x0C2000D0), n-way emitter call -> tripler
         .long 0xAC1FFCD4, 0xA03F0F00   ! bullet create, single emitter call -> tripler
-        .long 0xAC1FF38C, 0xA03F1000   ! shot emitter processor (0x0C1FF930) -> replay queue first
+        .long 0xAC1FF38C, 0xA03F1100   ! shot emitter processor (0x0C1FF930) -> replay queue first
 
 ! ---- original values for the switchable long patches above (same order; ARCADE MODE)
         .org 0x640
@@ -366,17 +367,13 @@ L_scene:    .long 0x0C1FD750
         .long 0x0C1FF930
 
 ! ---- permanent long patches (address, value), always installed at boot
-        .org 0x680
-        .long 0xAC1F0F0C, 0xA03F04E0   ! scene change (game start / next stage): 0x0C1FD750 -> stgclr
-        .long 0xAC304158, 0x32362E31   ! memory-check screen date: "      2010. 8.13" -> "      2026.10.22"
-        .long 0xAC30415C, 0x302E3232   !   (second half)
-        .long 0xAC21F734, 0xA03F0E40   ! memory-check screen title: "AKAI KATANA" -> "AKAI KATANA UNLIMITED"
-        .long 0xAC2220E8, 0xA03F0C00   ! title: literal for the menu jump below (was 0x00806020, only used at 0x0C221F34)
 ! ---- permanent word patches
         .org 0x6C0
         .long 0xAC221F30, 0xD06D       ! title rank/score block entry: mov.l @(0x0C2220E8),r0
         .long 0xAC221F32, 0x402B       !   jmp @r0  (-> menu)
         .long 0xAC221F34, 0x0009       !   nop
+        .long 0xAC207A12, 0x095F       ! enemy work pool: last block index 998 -> 2399
+        .long 0xAC207126, 0x0960       ! enemy work pool: in-use table clear size 1000 -> 2400
 
 ! ---- warning screen text and version line (copied by the boot hook; see tools/warntext.py)
         .org 0x700
@@ -606,6 +603,9 @@ dupc:
         mov.l   @(36,r15),r0
         cmp/eq  #0x4A,r0
         bt      93f              ! revenge bullet: single
+        bsr     hot
+        nop
+        bt      93f              ! screen already busy: single
         mov     #1,r1
         mov.l   r1,@(32,r15)
 91:     bsr     95f
@@ -662,8 +662,34 @@ dupc:
         add     #4,r2
         rts
         nop
+! T = 1 when the live enemy bullet count (base+0x5CC70) is above BUSY. Uses r0, r1.
+hot:    mov.l   L_bb,r0
+        mov.l   @r0,r0
+        mov.l   L_bc,r1
+        add     r1,r0
+        mov.l   @r0,r0
+        mov.w   L_busy,r1
+        rts
+        cmp/hi  r1,r0
+L_busy: .word   BUSY
         .align 2
 L_bcr:  .long   0x0C2000D0
+L_bb:   .long   0x0C4C65AC
+L_bc:   .long   0x0005CC70
+
+! ---- permanent long patches (address, value), always installed at boot
+        .org 0x1000
+        .long 0xAC1F0F0C, 0xA03F04E0   ! scene change (game start / next stage): 0x0C1FD750 -> stgclr
+        .long 0xAC304158, 0x32362E31   ! memory-check screen date: "      2010. 8.13" -> "      2026.10.22"
+        .long 0xAC30415C, 0x302E3232   !   (second half)
+        .long 0xAC21F734, 0xA03F0E40   ! memory-check screen title: "AKAI KATANA" -> "AKAI KATANA UNLIMITED"
+        .long 0xAC2220E8, 0xA03F0C00   ! title: literal for the menu jump below (was 0x00806020, only used at 0x0C221F34)
+        .long 0xAC207144, 0x0CD00000   ! enemy work pool moved to free RAM and enlarged: 999 -> 2400 blocks
+        .long 0xAC207A34, 0x0CD00000   !   (allocator base)
+        .long 0xAC207140, 0x00025800   !   pool clear size (2400 x 64)
+        .long 0xAC207148, 0x0CD26000   !   in-use table (init)
+        .long 0xAC207A24, 0x0CD26000   !   in-use table (allocator)
+        .long 0xAC207EBC, 0x0CD26000   !   in-use table (free)
 
 ! ---- enemies fire 1.5x as often (UNLIMITED). Enemy volleys are shot emitters: 148-byte records in a
 ! pool (base = @0x0C4C65AC, records at base+0x5CC80, count at base+0x6ED90) that the processor
@@ -671,7 +697,7 @@ L_bcr:  .long   0x0C2000D0
 ! enemy emitter (state 1, type not 0x4A revenge) is copied into a replay queue, and copies whose
 ! RQ_DELAY frames are up are put back into the pool, so half of all volleys fire a second time.
 ! r4 = pool base (passed on to the processor).
-        .org 0x1000
+        .org 0x1100
 replay:
         sts.l   pr,@-r15
         mov.l   r8,@-r15
@@ -679,6 +705,10 @@ replay:
         mov.l   r10,@-r15
         mov.l   r11,@-r15
         mov.l   r4,@-r15
+        mov.l   L_rhot,r0
+        jsr     @r0
+        nop
+        bt      119f             ! screen busy: no extra volleys this frame
         mov.l   L_rcnt,r0
         mov.l   @(r0,r4),r10     ! emitters this frame
         mov.l   L_rpool,r8
@@ -758,7 +788,7 @@ replay:
         dt      r9
         bf/s    111b
         add     r0,r11
-        mov.l   @r15+,r4
+119:    mov.l   @r15+,r4
         mov.l   @r15+,r11
         mov.l   @r15+,r10
         mov.l   @r15+,r9
@@ -776,3 +806,4 @@ L_rpool: .long  0x0005CC80
 L_rq:    .long  RQ
 L_rtog:  .long  MV+12
 L_rproc: .long  0x0C1FF930
+L_rhot:  .long  hot+0xA03F0000
