@@ -18,6 +18,15 @@ I did all the testing and planning.
 
 ## Change Notes
 
+### 2026/10/22 (u4 CRC32 `12aaac4f`)
+- Removed the revenge bullets that were fired together with enemies' normal shots in ship mode. Revenge bullets are back to the original: destroyed enemies fire them in spirit form only.
+- Energy balls that circle you in spirit form are now collected automatically when you go back to ship mode, instead of returning to the orb.
+- New warning screen: an unofficial-project notice and "Have fun!!!" (Japan and export versions).
+- Version line on the warning screen now reads `2026/10/22 VERY LIMITED`; the memory-check screen date reads `2026.10.22`.
+- Web patcher: renamed to Akai Katana Unlimited (outputs `akatanaultd.zip` and `Akai Katana Unlimited.mra`), the Changes section was removed, and the source link points to this repository.
+
+### Current features
+
 Spirit form = 念身.
 
 - **Gold is collected automatically.** Gold no longer circles the ship until spirit form ends. As soon as a piece has a player to fly to, it goes to the release state and is collected.
