@@ -43,11 +43,15 @@ You need your own dump of the original game: `akatana.zip` with the 2010/ 8/13 M
 Open the **[Web Patcher](https://iamthechuckster.github.io/Akai_Katana_Unlimited/)** (`index.html`) and drop in your `akatana.zip`. It checks the file names and CRCs, builds the patched files automatically, and lets you download just the patched files or a complete `akatanaultd.zip` romset. Everything runs in your browser; nothing is uploaded.
 
 ### With Python
-Needs Python 3, `make`, and the SuperH binutils (`sh-elf-as`, `sh-elf-objcopy`).
-1. Clone or download this repository.
-2. Copy your original `u4` (from `akatana.zip`) into the repository folder.
-3. Run `make U4=u4`. This assembles the patch and writes the patched ROM to `build/u4`, printing its CRC32 (should be `c229869a`).
-4. Put `build/u4` into a copy of your `akatana.zip` in place of the original u4 (keep a backup of the original).
+Needs [Python 3](https://www.python.org/downloads/). Download `patch.py` from this repository, put it in the same folder as your `akatana.zip`, open a terminal in that folder and run:
+
+```
+python3 patch.py akatana.zip
+```
+
+(On Windows use `python` or `py` instead of `python3`.)
+
+It writes `akatanaultd.zip`, the full set with the patched u4, and `u4_unlimited`, the patched u4 on its own (CRC32 `c229869a`). Your original zip is not changed.
 
 ## Testing
 This patch was tested with MAME 0.289 and [CV1k core for the MiSTer FPGA by Raki](https://www.patreon.com/c/ikamusume/posts)<br>
