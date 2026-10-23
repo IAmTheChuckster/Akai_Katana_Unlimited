@@ -682,8 +682,8 @@ L_bc:   .long   0x0005CC70
 ! ---- permanent long patches (address, value), always installed at boot
         .org 0x1000
         .long 0xAC1F0F0C, 0xA03F04E0   ! scene change (game start / next stage): 0x0C1FD750 -> stgclr
-        .long 0xAC304158, 0x32362E31   ! memory-check screen date: "      2010. 8.13" -> "      2026.10.22"
-        .long 0xAC30415C, 0x302E3232   !   (second half)
+        .long 0xAC304158, 0x32362F31   ! memory-check screen date: "      2010. 8.13" -> "      2026/10/23"
+        .long 0xAC30415C, 0x302F3233   !   (second half)
         .long 0xAC21F734, 0xA03F0E40   ! memory-check screen title: "AKAI KATANA" -> "AKAI KATANA UNLIMITED"
         .long 0xAC2220E8, 0xA03F0C00   ! title: literal for the menu jump below (was 0x00806020, only used at 0x0C221F34)
         .long 0xAC207144, 0x0CD00000   ! enemy work pool moved to free RAM and enlarged: 999 -> 2400 blocks

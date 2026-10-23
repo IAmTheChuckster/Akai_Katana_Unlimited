@@ -45,7 +45,7 @@
     <nvram index="3" size="135680"/>
 
     <rom index="0" zip="akatanaultd.zip" md5="none">
-        <part name="u4"  crc="87a8a511"/>
+        <part name="u4"  crc="c229869a"/>
     </rom>
 
     <buttons names="B1,B2,B3,B4,Start,Coin,Test,Service,Save State" default="A,B,X,Y,Start,R,L,Select"/>
