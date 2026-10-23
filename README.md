@@ -1,12 +1,4 @@
 # Akai Katana Unlimited
-## To Do
-1.
-2. 
-3. 
-4. don't loose energy after death
-5. 
-6. see about adding 360 voice DLC support.
-7. 
 
 A gameplay patch for Akai Katana (2010/ 8/13 MASTER VER.)<br>
 This repository holds only source, tools and notes. **No ROM data is included**; you patch your own legally owned dump.
