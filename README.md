@@ -18,13 +18,13 @@ I did all the testing and planning.
 
 ## Change Notes
 
-### Kiwami branch (work in progress, u4 CRC32 `353e0188`)
+### Kiwami branch (work in progress, u4 CRC32 `c229869a`)
 - **Enemy bullets come in threes (UNLIMITED).** Every normal enemy bullet is followed by two copies on the same path, 5 and 10 frames behind, so each shot becomes a trailing line of three. Revenge bullets stay single. (Wrapper on the bullet-create calls at `0C1FFBB4`/`0C1FFCD4`.)
 - **Enemies fire 1.5x as often (UNLIMITED).** Every other enemy volley is fired a second time 20 frames later, from the same spot with the same pattern. (Replay queue in front of the shot-emitter processor, pointer at `0C1FF38C`; queue in RAM at `0C7F2000`.)
 - **Fixed the stage 1 boss freeze** ("enemy/enemy.cpp" error screen with the music still playing). The game keeps its enemy objects in a fixed pool of 999 memory blocks; the original game already uses up to 784 of them at the stage 1 boss, and the extra bullets pushed it over. The pool is moved to unused RAM at `0CD00000` and enlarged to 2,400 blocks (in-use table at `0CD26000`), in both modes.
 - Extra bullets and repeated volleys pause while more than 900 enemy bullets are on screen, so the game's own 999-bullet cap is never hit.
 - **Shion's pen collects energy twice as fast (UNLIMITED).** Energy balls gathered by Shion's pen give double energy when collected. (Wrapper on the AddEnergy call in the item collect routine, literal at `0C22A2E4`.)
-- Date on the warning screen now reads `2026/10/23 UNLIMITED`, and the memory-check screen reads `2026/10/23`.
+- Date on the warning screen now reads `2026/10/23 UNLIMITED` (centred, as is "HAVE FUN!!!"), and the memory-check screen reads `2026/10/23`.
 - ARCADE MODE is otherwise unchanged.
 
 ### 2026/10/22 (u4 CRC32 `7f51bcd6`)
