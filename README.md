@@ -40,13 +40,7 @@ I did all the testing and planning.
 You need your own dump of the original game: `akatana.zip` with the 2010/ 8/13 MASTER VER. program ROM (u4, CRC32 `613fd380`). No ROM data is included here.
 
 ### With the web patcher (easiest)
-1. Open the web patcher: `index.html` from this repository (download it and open it in your browser). Everything runs in your browser; nothing is uploaded.
-2. Drop `akatana.zip` (or a loose `u4`) onto the page. It checks that your u4 is the original one.
-3. Download the result:
-   - `akatanaultd.zip`: the full set with the patched u4 (u2, u23 and u24 copied unchanged).
-   - `Akai Katana Unlimited.mra`: for the MiSTer CV1k core. Put it with your other arcade .mra files, and `akatanaultd.zip` in `games/mame`.
-   - Or just the patched `u4` (raw or zipped), e.g. to replace u4 in a copy of `akatana.zip` for MAME.
-4. The patched u4 should have CRC32 `c229869a`; the page shows this.
+Open the **[Web Patcher](https://iamthechuckster.github.io/Ibara_Kuro_Show_Time/)** (`index.html`) and drop in your `akatana.zip`. It checks the file names and CRCs, builds the patched files automatically, and lets you download just the patched files or a complete `akatanaultd.zip` romset. Everything runs in your browser; nothing is uploaded.
 
 ### With Python
 Needs Python 3, `make`, and the SuperH binutils (`sh-elf-as`, `sh-elf-objcopy`).
