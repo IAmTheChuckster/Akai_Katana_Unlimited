@@ -9,7 +9,7 @@ MSG = ("This project is unofficial and is not affiliated with, endorsed by, or a
        "All rights to the original game and its associated intellectual property remain with their "
        "respective rights holders.")
 FUN = "HAVE FUN!!!"
-DATE = "2026/10/22 UNLIMITED"
+DATE = "2026/10/23 UNLIMITED"
 BASE = 0x3042D4
 # original layout: (offset, length) of each string, read from the 2010/8/13 program
 JP = [(0x3042d4+i*0x2c,40) for i in range(8)]
