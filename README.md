@@ -40,7 +40,7 @@ I did all the testing and planning.
 You need your own dump of the original game: `akatana.zip` with the 2010/ 8/13 MASTER VER. program ROM (u4, CRC32 `613fd380`). No ROM data is included here.
 
 ### With the web patcher (easiest)
-Open the **[Web Patcher](https://iamthechuckster.github.io/Ibara_Kuro_Show_Time/)** (`index.html`) and drop in your `akatana.zip`. It checks the file names and CRCs, builds the patched files automatically, and lets you download just the patched files or a complete `akatanaultd.zip` romset. Everything runs in your browser; nothing is uploaded.
+Open the **[Web Patcher](https://iamthechuckster.github.io/Akai_Katana_Unlimited/)** (`index.html`) and drop in your `akatana.zip`. It checks the file names and CRCs, builds the patched files automatically, and lets you download just the patched files or a complete `akatanaultd.zip` romset. Everything runs in your browser; nothing is uploaded.
 
 ### With Python
 Needs Python 3, `make`, and the SuperH binutils (`sh-elf-as`, `sh-elf-objcopy`).
