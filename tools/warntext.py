@@ -13,21 +13,21 @@ DATE = "2026/10/23 UNLIMITED"
 BASE = 0x3042D4
 # original layout: (offset, length) of each string, read from the 2010/8/13 program
 JP = [(0x3042d4+i*0x2c,40) for i in range(8)]
-DT = (0x304434,28)
+DT = (0x304434,31)   # slot is 28 chars + NUL padding up to the next string at +0x20, so 31 fit
 EX = [(0x304454+i*0x20,30) for i in range(13)]
 END = 0x3045F4
-def block(slots, indent, width):
+def block(slots, indent, width, funpad):
     lines = textwrap.wrap(MSG, width) + [''] + [FUN]
     assert len(lines) <= len(slots), (len(lines), len(slots))
     lines += [''] * (len(slots) - len(lines))
     out = []
     for (off, n), l in zip(slots, lines):
-        s = (' ' * indent + l).ljust(n)
+        s = ((' ' * funpad + l) if l == FUN else (' ' * indent + l)).ljust(n)
         assert len(s) == n, s
         out.append((off, s))
     return out
-strs = block(JP, 2, 36) + block(EX, 3, 25)
-d = ' ' * (DT[1] - len(DATE)) ; ds = (d[:7] + DATE).ljust(DT[1]); strs.append((DT[0], ds))
+strs = block(JP, 2, 36, (40 - len(FUN) + 1) // 2) + block(EX, 3, 25, 3 + (25 - len(FUN)) // 2)   # HAVE FUN!!! centred
+ds = (' ' * ((40 - len(DATE) + 1) // 2) + DATE).ljust(DT[1]); assert len(ds) == DT[1]; strs.append((DT[0], ds))   # centred on the 40-column screen
 mem = bytearray(END - BASE)
 for off, s in strs:
     mem[off - BASE:off - BASE + len(s)] = s.encode('ascii')
