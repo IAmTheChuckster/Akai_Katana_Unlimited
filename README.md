@@ -2,7 +2,8 @@
 
 A gameplay patch for Akai Katana (2010/ 8/13 MASTER VER.)<br>
 This repository holds only source, tools and notes. **No ROM data is included**; you patch your own legally owned dump.
-
+## To Do:
+1. Add UNLIMITED to the title page
 ## About this project
 Why did I make this? Because it's fun and for my own personal research to see the capabilities of Claude.<br>
 While Claude was used I put effort in making sure there are balanced gameplay.<br>
