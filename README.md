@@ -28,7 +28,7 @@ I did all the testing and planning.
 - **Close-range medals:** a 100 medal that appears right next to you becomes a 1,000 medal.
 - **Leaving spirit form early is free:** you keep the energy you have left instead of losing 1,600.
 - **Energy balls follow you into spirit form,** don't expire while you're in it, and are collected automatically when you go back to ship mode.
-- **Shion's pen collects energy twice as fast.**
+- **Shion's orb collects energy twice as fast.**
 - **Revenge bullets** work as in the original game (spirit form only).
 
 ### Fixes
