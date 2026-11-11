@@ -3,9 +3,10 @@
 A gameplay patch for `Akai Katana (Japan, 2010/ 8/13 MASTER VER.)`<br>
 This repository holds only source, tools and notes. **No ROM data is included**; you patch your own legally owned dump.
 ## To Do:
-1. Add UNLIMITED to the title page
-2. Update MRA files to include button names
-3. Add Progear mode
+1. Add skill to move this from Claude Chat to Claude Code
+2. Add UNLIMITED to the title page
+3. Update MRA files to include button names
+4. Add Progear-like mode(remove energy balls, gold adds energy)
    
 ## About this project
 Why did I make this? Because it's fun and for my own personal research to see the capabilities of Claude.<br>
