@@ -22,7 +22,7 @@ UNLIMITED (all patches), chosen from a menu on the title screen after a coin.
   The Akai Katana Lua harness (`lua/akatana_harness.lua`, `scripts/ak.sh`) lived in the old cloud workspace and is
   **not in this repo**: recreate it from the test env's `lua/harness.lua`. Needed features: boot mode (save a state),
   run mode (load a state, play a schedule, dump RAM per frame, snapshots, hold/poke memory).
-- Reference notes on the game (RAM map, scoring, rank, items): `docs/akatana-mechanics.md` if present, else the
+- Reference notes on the game (RAM map, scoring, rank, items): `docs/akatana-mechanics.md`, and the
   owner's Claude Project "Akai Katana" (`claude/akatana-mechanics.md`).
 - SuperH toolchain for building: `sh-elf-as` and `sh-elf-objcopy`; Python 3.
 
@@ -31,8 +31,8 @@ UNLIMITED (all patches), chosen from a menu on the title screen after a coin.
 ### 0. Inputs and expected results
 | File | CRC32 | Notes |
 |---|---|---|
-| u4 | 613fd380 | program, 2010/ 8/13 MASTER VER. (patched) |
-| u2, u23, u24 | 89a2e1a5, 34a67e24, 10760fed | copied unchanged |
+| u4 | 613fd380 | original program, 2010/ 8/13 MASTER VER. (the patch is applied to this) |
+| u2, u23, u24 | 89a2e1a5, 34a67e24, 10760fed | original files, copied unchanged |
 
 Output: patched `u4` (CRC32 is in `tools/build.py` and the README; `c229869a` at the time of writing),
 romset `akatanaultd.zip` = patched u4 + u2/u23/u24, MiSTer `Akai Katana Unlimited.mra`.
