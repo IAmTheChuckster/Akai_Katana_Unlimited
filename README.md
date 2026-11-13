@@ -16,8 +16,8 @@ I did all the testing and planning.
 ## Change Notes
 
 ### Mode select
-- After inserting a coin, the title screen shows **ARCADE MODE** and **UNLIMITED** where the rank and high-score lines were. Pick one with up/down and press start.
-- **ARCADE MODE** is the original game, untouched. **UNLIMITED** turns on every gameplay change below.
+- After inserting a coin, the title screen shows **ORIGINAL ARCADE** and **UNLIMITED VER** where the rank and high-score lines were. Pick one with up/down and press start.
+- **ORIGINAL ARCADE** is the original game, untouched. **UNLIMITED VER** turns on every gameplay change below.
 
 ### UNLIMITED gameplay changes
 - **Triple bullets:** every normal enemy shot comes as a trailing line of three bullets on the same path.
@@ -37,8 +37,9 @@ I did all the testing and planning.
 - Extra bullets pause when the screen is extremely full, so the game's own bullet limit is never reached.
 
 ### Screens
-- New boot warning screen: an unofficial-project notice and "HAVE FUN!!!", with the date line `2026/10/23 UNLIMITED` (both centred).
-- The memory-check screen reads **AKAI KATANA UNLIMITED** and `2026/10/23`.
+- New boot warning screen (all capitals): an unofficial-project notice and "HAVE FUN!!!", with the date line `2026/11/13 UNLIMITED` (both centred).
+- The memory-check screen reads **AKAI KATANA UNLIMITED** with `2026/11/13` centred under it.
+- The title screen shows **UNLIMITED** to the right of the logo, in gold, in the warning screen's font. It fades up 2 seconds after the title appears; when a coin goes in it disappears and fades up again 2 seconds later.
 
 ## Patching the game
 
@@ -56,7 +57,7 @@ python3 patch.py akatana.zip
 
 (On Windows use `python` or `py` instead of `python3`.)
 
-It writes `akatanaultd.zip`, the full set with the patched u4, and `u4_unlimited`, the patched u4 on its own (CRC32 `c229869a`). Your original zip is not changed.
+It writes `akatanaultd.zip`, the full set with the patched u4, and `u4_unlimited`, the patched u4 on its own (CRC32 `57391cf9`). Your original zip is not changed.
 
 ## Testing
 This patch was tested with MAME 0.289 and [CV1k core for the MiSTer FPGA by Raki](https://www.patreon.com/c/ikamusume/posts)<br>

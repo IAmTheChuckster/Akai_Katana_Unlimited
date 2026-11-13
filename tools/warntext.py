@@ -7,9 +7,9 @@ length, so all pointers and the layout stay valid."""
 import textwrap, os
 MSG = ("This project is unofficial and is not affiliated with, endorsed by, or authorized by CAVE. "
        "All rights to the original game and its associated intellectual property remain with their "
-       "respective rights holders.")
+       "respective rights holders.").upper()
 FUN = "HAVE FUN!!!"
-DATE = "2026/10/23 UNLIMITED"
+DATE = "2026/11/13 UNLIMITED"
 BASE = 0x3042D4
 # original layout: (offset, length) of each string, read from the 2010/8/13 program
 JP = [(0x3042d4+i*0x2c,40) for i in range(8)]

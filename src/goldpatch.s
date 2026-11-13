@@ -5,11 +5,11 @@
 ! Installs the permanent patches (title-screen mode menu, game-start hook, boot-screen text). The
 ! UNLIMITED patches are written (or the original values put back, for ARCADE MODE) by "apply" when a
 ! game starts; the original values are listed next to each table (0x360, 0x680).
-        .equ MV,   0x0C7FF000    ! menu vars: +0 cursor (0 = ARCADE MODE, 1 = UNLIMITED), +4 last input, +8 mode in use
+        .equ MV,   0x0C7FF000    ! menu vars: +0 cursor (0 = ORIGINAL ARCADE, 1 = UNLIMITED VER), +16/+20/+24 title UNLIMITED fade (last frame, start frame, credits), +4 last input, +8 mode in use
         .equ SW_WN, 12
         .equ SW_LN, 9
-        .equ PM_WN, 5
-        .equ PM_LN, 11
+        .equ PM_WN, 6
+        .equ PM_LN, 12
         .equ BUSY, 900           ! no tripling/replay above this many live enemy bullets
         .equ RQ,   0x0C7F2000    ! volley replay queue: RQ_N entries of [timer, 148-byte emitter]
         .equ RQ_N, 32
@@ -376,6 +376,7 @@ L_scene:    .long 0x0C1FD750
         .long 0xAC221F34, 0x0009       !   nop
         .long 0xAC207A12, 0x095F       ! enemy work pool: last block index 998 -> 2399
         .long 0xAC207126, 0x0960       ! enemy work pool: in-use table clear size 1000 -> 2400
+        .long 0xAC21F71A, 0xE44C       ! memory-check screen date: print x 40 -> 76 (centred under the title)
 
 ! ---- warning screen text and version line (copied by the boot hook; see tools/warntext.py)
         .org 0x700
@@ -383,13 +384,17 @@ L_scene:    .long 0x0C1FD750
 
 ! ---- title-screen mode menu. Jumped to from the start of the title's rank/score block (0x0C221F30).
 ! No credits: run the original block (set r10/r8/r4 as the replaced instructions did, continue at
-! 0x0C221F36). With credits: draw ARCADE MODE / UNLIMITED in the block's place (same font 0xF0, same
+! 0x0C221F36). With credits: draw ORIGINAL ARCADE / UNLIMITED VER in the block's place (same font 0xF0, same
 ! outline as the rank line), move the cursor with up/down, and continue at 0x0C2220C8 (end of the block).
-        .equ MX,  108
-        .equ MY0, 124
-        .equ MY1, 140
+        .equ MX,  84
+        .equ MY0, 120
         .org 0xC00
 menu:
+        sts.l   pr,@-r15
+        mov.l   L_tlogo,r0       ! "UNLIMITED" next to the logo
+        jsr     @r0
+        nop
+        lds.l   @r15+,pr
         mov.l   L_cred,r1
         mov.l   @r1,r0           ! credits
         tst     r0,r0
@@ -408,33 +413,49 @@ menu:
         mov.l   r2,@(4,r9)
         not     r3,r3
         and     r3,r2            ! newly pressed
+        mov.l   @r9,r1           ! cursor 0-1
         mov     r2,r0
         tst     #1,r0
         bt      71f
-        mov     #0,r1
-        mov.l   r1,@r9           ! up: ARCADE MODE
+        tst     r1,r1
+        bt      71f
+        add     #-1,r1           ! up
 71:     mov     r2,r0
         tst     #2,r0
         bt      72f
-        mov     #1,r1
-        mov.l   r1,@r9           ! down: UNLIMITED
-72:     mov.l   @r9,r0
-        mov     #0,r12
-        tst     r0,r0
-        movt    r12              ! r12 = 1 if ARCADE MODE selected
-        mov.l   L_s0a,r10
-        tst     r12,r12
-        bt      73f
-        mov.l   L_s0b,r10
-73:     bsr     item
-        mov     #MY0,r11
-        mov.l   @r9,r12          ! r12 = 1 if UNLIMITED selected
-        mov.l   L_s1a,r10
+        mov     #1,r0
+        cmp/ge  r0,r1
+        bt      72f
+        add     #1,r1            ! down
+72:     mov.l   r1,@r9
+        mov     #0,r8            ! entry 0-1
+73:     mov.l   @r9,r0
+        cmp/eq  r8,r0
+        movt    r12              ! r12 = 1 if this entry is selected
+        mov.l   L_stab,r1        ! string table: (not selected, selected) per entry
+        mov     r8,r0
+        shll2   r0
+        shll    r0
+        add     r0,r1
         tst     r12,r12
         bt      74f
-        mov.l   L_s1b,r10
-74:     bsr     item
-        mov     #MY1,r11
+        add     #4,r1
+74:     mov.l   @r1,r10
+        mov     r8,r11           ! y = MY0 + 14 x entry
+        shll2   r11
+        shll2   r11
+        mov     r8,r0
+        add     r0,r0
+        sub     r0,r11
+        add     #MY0,r11
+        mov.l   r8,@-r15
+        bsr     item
+        nop
+        mov.l   @r15+,r8
+        add     #1,r8
+        mov     #2,r0
+        cmp/ge  r0,r8
+        bf      73b
         mov.l   L_back2,r0
         jmp     @r0
         nop
@@ -508,18 +529,8 @@ L_outl:  .long  0x002A200A
 L_grey:  .long  0x00606060
 L_back1: .long  0x0C221F36
 L_back2: .long  0x0C2220C8
-L_s0a:   .long  0xA03F0E00
-L_s0b:   .long  0xA03F0E10
-L_s1a:   .long  0xA03F0E20
-L_s1b:   .long  0xA03F0E30
-        .org 0xE00
-        .asciz  "  ARCADE MODE"
-        .org 0xE10
-        .asciz  "> ARCADE MODE"
-        .org 0xE20
-        .asciz  "  UNLIMITED"
-        .org 0xE30
-        .asciz  "> UNLIMITED"
+L_stab:  .long  0xA03F0000 + mstab
+L_tlogo: .long  0xA03F0000 + tlogo
         .org 0xE40
         .asciz  "AKAI KATANA UNLIMITED"
 
@@ -682,10 +693,11 @@ L_bc:   .long   0x0005CC70
 ! ---- permanent long patches (address, value), always installed at boot
         .org 0x1000
         .long 0xAC1F0F0C, 0xA03F04E0   ! scene change (game start / next stage): 0x0C1FD750 -> stgclr
-        .long 0xAC304158, 0x32362F31   ! memory-check screen date: "      2010. 8.13" -> "      2026/10/23"
-        .long 0xAC30415C, 0x302F3233   !   (second half)
+        .long 0xAC304158, 0x32362F31   ! memory-check screen date: "      2010. 8.13" -> "      2026/11/13"
+        .long 0xAC30415C, 0x312F3133   !   (second half)
         .long 0xAC21F734, 0xA03F0E40   ! memory-check screen title: "AKAI KATANA" -> "AKAI KATANA UNLIMITED"
         .long 0xAC2220E8, 0xA03F0C00   ! title: literal for the menu jump below (was 0x00806020, only used at 0x0C221F34)
+        .long 0xAC222620, 0xA03F0000 + tlwrap ! title without credits: set-tint literal -> tlwrap (draws UNLIMITED)
         .long 0xAC207144, 0x0CD00000   ! enemy work pool moved to free RAM and enlarged: 999 -> 2400 blocks
         .long 0xAC207A34, 0x0CD00000   !   (allocator base)
         .long 0xAC207140, 0x00025800   !   pool clear size (2400 x 64)
@@ -825,3 +837,185 @@ eshion: mov.l   L_pilot,r0
         .align 2
 L_pilot: .long  0x0C7E8658
 L_adde:  .long  0x0C1F9470
+
+! ---- "UNLIMITED" on the title screen, right of the logo, in the warning screen's font. It fades up
+! (over 32 frames) TL_DELAY frames after the title appears, and when a coin goes in it disappears and
+! fades up again TL_DELAY frames later. Called from
+! the start of the title menu hook (title with credits) and from tlwrap (title without credits). The warning screen
+! draws each character as three sprites with 0x0C1E4980(sprite = char + 0x60, x, y, priority; 16.16,
+! y counts up from the bottom of the 240-line screen): a shadow at (+2,-2) and (+1,-1) with alpha
+! 0x20 / 0x40 (0x0C1DEA94), then the character itself with colour 0x808080 (0x0C1DE8B4). Same here, but gold.
+        .equ TL_X, 238 << 16     ! centre of the first character (8 px per character)
+        .equ TL_Y, 124 << 16     ! = screen line 116
+        .equ TL_DELAY, 120       ! frames (2 s) before it fades up, each time the title appears or a coin goes in
+        .org 0x1240
+tlogo:  mov.l   L_tfc,r1
+        mov.l   @r1,r2           ! global frame counter
+        mov.l   L_tcr,r1
+        mov.l   @r1,r3           ! credits
+        mov.l   L_tmv,r1
+        mov.l   @(16,r1),r0      ! frame of the last call
+        mov.l   r2,@(16,r1)
+        sub     r0,r2
+        mov     #2,r0
+        cmp/hi  r0,r2            ! T = the title was not drawn last frame (it has just appeared)
+        mov.l   @(24,r1),r0
+        mov.l   r3,@(24,r1)
+        bt      81f
+        cmp/eq  r0,r3
+        bt      82f
+81:     mov.l   L_tfc,r0         ! title just appeared, or a coin went in: restart the timer
+        mov.l   @r0,r0
+        mov.l   r0,@(20,r1)
+82:     mov.l   L_tfc,r0
+        mov.l   @r0,r0
+        mov.l   @(20,r1),r2
+        sub     r2,r0            ! frames since the timer started
+        mov.w   L_tdl,r2
+        cmp/hs  r2,r0
+        bt      83f
+        rts                      ! first TL_DELAY frames: nothing
+        nop
+83:     sub     r2,r0            ! fade: f = 0..32
+        mov     #32,r2
+        cmp/hs  r2,r0
+        bf      84f
+        mov     r2,r0
+84:     mov.l   r8,@-r15
+        mov.l   r9,@-r15
+        mov.l   r10,@-r15
+        mov.l   r11,@-r15
+        mov.l   r12,@-r15
+        mov.l   r13,@-r15
+        mov     r0,r13           ! r13 = f
+        sts.l   pr,@-r15
+        add     #-4,r15          ! stack argument for 0x0C1DEA94
+        mov.l   L_tls,r8         ! string
+        mov.l   L_tlx,r9         ! x
+        mov.l   L_tly,r11        ! y
+        mov.l   L_t1,r12         ! 0x10000
+80:     mov.b   @r8+,r10
+        extu.b  r10,r10
+        tst     r10,r10
+        bt      89f
+        add     #0x60,r10        ! sprite number
+        mov     r10,r4           ! shadow 1: (+2,-2), alpha 0x20, priority 400
+        mov     r9,r5
+        add     r12,r5
+        add     r12,r5
+        mov     r11,r6
+        sub     r12,r6
+        sub     r12,r6
+        mov.w   L_tp0,r7
+        mov.l   L_spr,r0
+        jsr     @r0
+        nop
+        mov     r0,r4
+        mov     #2,r5
+        mov     #3,r6
+        mov     r13,r7           ! alpha 0x20 x f/32
+        mov     #0,r1
+        mov.l   L_alp,r0
+        jsr     @r0
+        mov.l   r1,@r15
+        mov     r10,r4           ! shadow 2: (+1,-1), alpha 0x40, priority 500
+        mov     r9,r5
+        add     r12,r5
+        mov     r11,r6
+        sub     r12,r6
+        mov.w   L_tp1,r7
+        mov.l   L_spr,r0
+        jsr     @r0
+        nop
+        mov     r0,r4
+        mov     #2,r5
+        mov     #3,r6
+        mov     r13,r7
+        add     r7,r7            ! alpha 0x40 x f/32
+        mov     #0,r1
+        mov.l   L_alp,r0
+        jsr     @r0
+        mov.l   r1,@r15
+        mov     r10,r4           ! character, gold, priority 500
+        mov     r9,r5
+        mov     r11,r6
+        mov.w   L_tp1,r7
+        mov.l   L_spr,r0
+        jsr     @r0
+        nop
+        mov     r0,r10           ! keep the sprite (the character is no longer needed)
+        mov     #32,r0
+        cmp/hs  r0,r13
+        bt      85f              ! fully faded in: opaque as before
+        mov     r10,r4
+        mov     #2,r5
+        mov     #3,r6
+        mov     r13,r7
+        shll2   r7               ! alpha 4f (0..124)
+        mov     #0,r1
+        mov.l   L_alp,r0
+        jsr     @r0
+        mov.l   r1,@r15
+85:     mov     r10,r4
+        mov.l   L_col,r5
+        mov.l   L_rgb,r0
+        jsr     @r0
+        nop
+        mov     r12,r0
+        shll2   r0
+        shll    r0               ! 8 px
+        bra     80b
+        add     r0,r9
+89:     add     #4,r15
+        lds.l   @r15+,pr
+        mov.l   @r15+,r13
+        mov.l   @r15+,r12
+        mov.l   @r15+,r11
+        mov.l   @r15+,r10
+        mov.l   @r15+,r9
+        rts
+        mov.l   @r15+,r8
+L_tp0:  .word   400
+L_tp1:  .word   500
+L_tdl:  .word   TL_DELAY
+        .align 2
+L_tls:  .long   0xA03F0000 + tl_str
+L_tlx:  .long   TL_X
+L_tly:  .long   TL_Y
+L_t1:   .long   0x10000
+L_spr:  .long   0x0C1E4980
+L_alp:  .long   0x0C1DEA94
+L_rgb:  .long   0x0C1DE8B4
+L_tfc:  .long   0x0C002310       ! global frame counter (+1 every frame)
+L_tcr:  .long   0x0C1E0D7C       ! credits
+L_tmv:  .long   MV
+L_col:  .long   0x00806020       ! gold (the rank line's yellow)
+tl_str: .asciz  "UNLIMITED"
+! title without credits: a separate routine (0x0C222450) draws the rank lines. Its first call, set
+! tint 0x0C1DD104 with r4 = 0x806020, goes through the literal at 0x0C222620 (permanent patch below);
+! no other call in that routine passes that tint, so UNLIMITED is drawn once per frame.
+        .align 2
+tlwrap: mov.l   L_tw6,r0
+        cmp/eq  r0,r4
+        bf      1f
+        sts.l   pr,@-r15
+        mov.l   r4,@-r15
+        bsr     tlogo
+        nop
+        mov.l   @r15+,r4
+        lds.l   @r15+,pr
+1:      mov.l   L_tw104,r0
+        jmp     @r0
+        nop
+        .align 2
+L_tw6:   .long  0x00806020
+L_tw104: .long  0x0C1DD104
+
+! title menu strings: (not selected, selected) for each entry
+        .align 2
+mstab:  .long   0xA03F0000 + ms0a, 0xA03F0000 + ms0b
+        .long   0xA03F0000 + ms1a, 0xA03F0000 + ms1b
+ms0a:   .asciz  "  ORIGINAL ARCADE"
+ms0b:   .asciz  "> ORIGINAL ARCADE"
+ms1a:   .asciz  "  UNLIMITED VER"
+ms1b:   .asciz  "> UNLIMITED VER"

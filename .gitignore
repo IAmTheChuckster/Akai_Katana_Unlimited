@@ -1,5 +1,6 @@
 # never commit ROM data
 build/
+roms/
 *.zip
 u2
 u4

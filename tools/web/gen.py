@@ -138,9 +138,11 @@ html = r'''<!doctype html>
     </table></div>
     <div class="btns" style="margin-top:14px">
       <a class="btn disabled" id="dlzip" href="#">Download akatanaultd.zip</a>
+      <a class="btn alt" id="dlmra" href="#">Akai Katana Unlimited.mra (MiSTer)</a>
+    </div>
+    <div class="btns" style="margin-top:10px">
       <a class="btn alt disabled" id="dlu4zip" href="#">u4.zip</a>
       <a class="btn alt disabled" id="dlu4" href="#">raw u4</a>
-      <a class="btn alt" id="dlmra" href="#">Akai Katana Unlimited.mra (MiSTer)</a>
     </div>
     <p class="note"><code>akatanaultd.zip</code> is the full set with <code>u4</code> replaced; <code>u2</code>, <code>u23</code> and <code>u24</code> are copied unchanged. On real hardware, keep a backup of your original u4 flash.</p>
     <p class="note"><b>MiSTer:</b> the <code>.mra</code> is for the ikacore CV1k core. Put it with your other arcade <code>.mra</code> files and <code>akatanaultd.zip</code> in your MAME ROM folder (<code>games/mame</code>). It loads <code>akatanaultd.zip</code> and checks for the Unlimited u4 (<code>@OUTCRC@</code>). After you load a zip, the <code>.mra</code> also uses the CRC32s of the <code>u2</code>, <code>u23</code> and <code>u24</code> it found, so it always matches your set.</p>
@@ -150,7 +152,7 @@ html = r'''<!doctype html>
     <p class="note">Source and details: <a href="https://github.com/IAmTheChuckster/Akai_Katana_Unlimited">github.com/IAmTheChuckster/Akai_Katana_Unlimited</a></p>
   </section>
 
-  <footer>Not affiliated with or endorsed by Cave or exA-Arcadia. You must supply your own legally obtained ROM dump.</footer>
+  <footer>Build @BUILD@ &middot; u4 <code>@OUTCRC@</code><br>Not affiliated with or endorsed by Cave or exA-Arcadia. You must supply your own legally obtained ROM dump.</footer>
 </main>
 
 <script>
@@ -371,7 +373,7 @@ async function handle(file) {
       msg("The patched u4 doesn't have the expected CRC32. Nothing was produced.", "bad");
       return;
     }
-    $("builtst").textContent = "OK"; $("builtst").className = "ok";
+    $("builtst").textContent = "Matches build @BUILD@"; $("builtst").className = "ok";
     mraLink(parts, outCrc);
 
     const t = dosNow();
@@ -424,8 +426,17 @@ window.addEventListener("drop", e => {
 </html>
 '''
 IN=0x613fd380; OUT=int(sys.argv[2],16)  # CRC32 of the patched u4
+# build number = how many versions of index.html exist: the commits that changed it, plus 1 for the
+# one being written now (so regenerating before a commit keeps the same number)
+import subprocess
+try:
+    out = subprocess.run(['git', 'log', '--follow', '--format=%h', '--', 'index.html'],
+                         cwd=os.path.join(HERE, '..', '..'), capture_output=True, text=True, check=True).stdout
+    num = len(out.split()) + 1
+except (OSError, subprocess.CalledProcessError):
+    num = 0
 html=(html.replace('@INCRCNUM@',hex(IN)).replace('@OUTCRCNUM@',hex(OUT))
-      .replace('@INCRC@','%08x'%IN).replace('@OUTCRC@','%08x'%OUT)
+      .replace('@BUILD@',str(num)).replace('@INCRC@','%08x'%IN).replace('@OUTCRC@','%08x'%OUT)
       .replace('@PATCH@',json.dumps(patch)).replace('@MRA@',json.dumps(mra)))
 open(os.path.join(HERE, '..', '..', 'index.html'),'w').write(html)
 # static MRA with the default CRCs

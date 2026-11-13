@@ -1,5 +1,5 @@
 <!--
-  ikacore_CV1k MRA - Akai Katana Unlimited (Akai Katana, Japan, 2010/ 8/13 MASTER VER., Unlimited patch).
+  ikacore_CV1k MRA - Akai Katana Unlimited (2026/11/13 Unlimited).
 
   DELIVERY: the NAND and YMZ images do not stream over the ioctl/SPI
   lane.  Both roms carry an `address=` attribute, so Main_MiSTer
@@ -24,9 +24,9 @@
 -->
 <misterromdescription>
     <about author="ika-musume" source="https://github.com/ika-musume/ikacore_CV1k"/>
-    <name>Akai Katana Unlimited (Japan, 2010/ 8/13 MASTER VER., Unlimited patch)</name>
+    <name>Akai Katana Unlimited (2026/11/13 Unlimited)</name>
     <setname>akatanaultd</setname>
-    <year>2010</year>
+    <year>2026</year>
     <manufacturer>Cave</manufacturer>
     <category>Shooter</category>
     <rbf>ikacore_CV1k</rbf>
@@ -48,5 +48,5 @@
         <part name="u4"  crc="@U4CRC@"/>
     </rom>
 
-    <buttons names="B1,B2,B3,B4,Start,Coin,Test,Service,Save State" default="A,B,X,Y,Start,R,L,Select"/>
+    <buttons names="Shot,Bomb,Rapid,Spirit Mode,Start,Coin,Test,Service,Save State" default="A,B,X,Y,Start,R,L,Select"/>
 </misterromdescription>
